@@ -63,7 +63,7 @@ namespace DeviceTuner.Services
 
         private bool PacketSendToTelnet()
         {
-            _tc = new TelnetConnection();
+            //_tc = new TelnetConnection();
             var ev = _ea.GetEvent<MessageSentEvent>();
             
             ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("conf t")));

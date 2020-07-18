@@ -38,9 +38,11 @@ namespace DeviceTuner.Services
 
         public List<NetworkDevice> GetNetworkDevices(string excelFileFullPath)
         {
-
             sourceFile = new FileInfo(excelFileFullPath);
             List<NetworkDevice> devices = new List<NetworkDevice>();
+
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);// Remove "IBM437 is not a supported encoding" error
+
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             using (ExcelPackage package = new ExcelPackage(sourceFile))
             {
@@ -74,7 +76,6 @@ namespace DeviceTuner.Services
                         if (System.Net.IPAddress.TryParse(devAddr, out System.Net.IPAddress parseAddress) && (devAddr.Split('.').Length - 1) == 3)
                         {
                             //Valid IP, with address containing the IP
-
                             switch (GetDeviceType(devModel))
                             {
                                 case 1:
@@ -91,7 +92,6 @@ namespace DeviceTuner.Services
                                 default:
                                     break;
                             }
-
                         }
                     }
                 }

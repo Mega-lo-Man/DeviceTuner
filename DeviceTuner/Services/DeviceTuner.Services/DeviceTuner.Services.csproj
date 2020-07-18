@@ -12,10 +12,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\EPPlus\EPPlus\EPPlus.csproj" />
     <ProjectReference Include="..\..\CommonPackages\MinimalisticTelnet\MinimalisticTelnet.csproj" />
     <ProjectReference Include="..\..\DeviceTuner.Core\DeviceTuner.Core.csproj" />
     <ProjectReference Include="..\DeviceTuner.Services.Interfaces\DeviceTuner.Services.Interfaces.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="EPPlus">
+      <HintPath>..\..\CommonPackages\EPPlus.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
