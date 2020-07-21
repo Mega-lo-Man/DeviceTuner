@@ -33,7 +33,16 @@ namespace DeviceTuner.SharedDataModel
         public int? AddressRS232
         {
             get { return _address_RS232; }
-            set { _address_RS232 = value; }
+            set { if (value > 0 && value < 127) _address_RS232 = value; }
+        }
+        /// <summary>
+        /// MAC-адрес прибора
+        /// </summary>
+        private string _macAddress;
+        public string MACaddress
+        {
+            get { return _macAddress; }
+            set { if (value.Length <= 17 && value.Length >= 12) _macAddress = value; }
         }
     }
 }

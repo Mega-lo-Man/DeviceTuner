@@ -21,8 +21,9 @@ namespace DeviceTuner.Services.Interfaces
         /// <param name="Port">Сетевой порт (22 для SSH-соединения , 23 для Telnet-соединения)</param>
         /// <param name="UserName">Имя учетной записи на коммутаторе (например, по умолчанию admin)</param>
         /// <param name="Password">Пароль от учетной записи на коммутаторе (например, по умолчанию admin)</param>
+        /// <param name="KeyFile">Путь к файлу ключа шифрования</param>
         /// <returns>True - соединение успешно создано, False - в противном случае</returns>
-        public bool CreateConnection(string IPaddress, ushort Port, string Username, string Password);
+        public bool CreateConnection(string IPaddress, ushort Port, string Username, string Password, string KeyFile);
         /// <summary>
         /// Завершение сетевого подключения
         /// </summary>

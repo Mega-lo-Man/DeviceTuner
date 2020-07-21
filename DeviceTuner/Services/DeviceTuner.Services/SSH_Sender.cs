@@ -1,5 +1,7 @@
-﻿using DeviceTuner.Services.Interfaces;
+﻿using DeviceTuner.Core;
+using DeviceTuner.Services.Interfaces;
 using DeviceTuner.SharedDataModel;
+using Prism.Events;
 using Renci.SshNet;
 using System;
 using System.Collections.Generic;
@@ -10,18 +12,26 @@ namespace DeviceTuner.Services
 {
     public class SSH_Sender : ISender
     {
-        private SshClient sshClient;
+        private SshClient _sshClient;
+        private EventAggregator _ea;
+
+        public SSH_Sender(EventAggregator ea, SshClient sshClient)
+        {
+            _ea = ea;
+            _sshClient = sshClient;
+        }
 
         public bool CloseConnection()
         {
-            sshClient.Disconnect();
+            _sshClient.Disconnect();
             return true;
         }
 
-        public bool CreateConnection(string IPaddress, ushort Port, string Username, string Password)
+        public bool CreateConnection(string IPaddress, ushort Port, string Username, string Password, string KeyFile)
         {
             try
             {
+                
                 ConnectionInfo ConnNfo = new ConnectionInfo(IPaddress, Username,
                     new AuthenticationMethod[] {
                                 //Password based Authentication
@@ -29,12 +39,12 @@ namespace DeviceTuner.Services
                                 //Key Based Authentication (using keys in OpneSSH format)
                                 new PrivateKeyAuthenticationMethod(Username, new PrivateKeyFile[]
                                 {
-                                    new PrivateKeyFile(@"id_rsa.key", "testrsa") //@"..\openssh.key"
+                                    new PrivateKeyFile(KeyFile/*@"id_rsa.key"*/, "testrsa")
                                 }),
                     });
-
-                sshClient = new SshClient(ConnNfo);
-                sshClient.Connect();
+                
+                _sshClient = new SshClient(ConnNfo);
+                _sshClient.Connect();
             }
             catch (Exception ex)
             {
@@ -46,8 +56,87 @@ namespace DeviceTuner.Services
 
         public NetworkDevice Send(NetworkDevice networkDevice, Dictionary<string, string> SettingsDict)
         {
+            
+            
+            ShellStream stream = _sshClient.CreateShellStream("", 0, 0, 0, 0, 0);
+
+            stream.WriteLine("sh system id");
+
+            GetIDoverSSH(GetDeviceResponse(stream), networkDevice);
+
+            stream.WriteLine("en");
+            stream.WriteLine("admin123");
+            stream.WriteLine("conf t");
+            stream.WriteLine("no ip telnet server");
+            stream.WriteLine("exit");
+            stream.WriteLine("wr mem");
+            stream.WriteLine("Y");
+
+            GetDeviceResponse(stream);
+
+            stream.Close();
 
             return networkDevice;
         }
+
+        private void GetIDoverSSH(string strForParse, NetworkDevice networkDevice)
+        {
+            string answer = strForParse;
+
+            string MACaddress;
+            string HardwareVersion;
+            string SerialNumber;
+
+            if (answer.Contains("MAC address :"))
+            {
+                answer = answer.Remove(0, answer.IndexOf("MAC address :"));
+                answer = answer.Replace(" ", "");
+                //"MACaddress:e0:d9:e3:3d:ca:80Hardwareversion:01.03.01Serialnumber:ES50004388"
+                MACaddress = answer.Substring(answer.IndexOf(":") + 1, 17);
+                answer = answer.Remove(0, answer.IndexOf("Hardwareversion:"));
+                //"Hardwareversion:01.03.01Serialnumber:ES50004388"
+                HardwareVersion = answer.Substring(answer.IndexOf(":") + 1, answer.IndexOf("Serialnumber:") - (answer.IndexOf(":") + 1));
+                answer = answer.Remove(0, answer.IndexOf("Serialnumber:"));
+                //"Serialnumber:ES50004388"
+                SerialNumber = answer.Remove(0, answer.IndexOf(":") + 1);
+            }
+            else
+            {
+                answer = answer.Trim();
+                //"\rSWITCH_1_2>sh system id\rUnit    MAC address    Hardware version Serial number ---- ----------------- ---------------- -------------  1   e8:28:c1:5d:5f:60     01.02.01      ES5E004602"
+                int LastWordIndex = answer.LastIndexOf(' ') + 1;
+                SerialNumber = answer.Substring(LastWordIndex, answer.Length - LastWordIndex);
+                answer = answer.Remove(LastWordIndex);
+                answer = answer.Trim();
+                // //"\rSWITCH_1_2>sh system id\rUnit    MAC address    Hardware version Serial number ---- ----------------- ---------------- -------------  1   e8:28:c1:5d:5f:60     01.02.01"
+                LastWordIndex = answer.LastIndexOf(' ') + 1;
+                HardwareVersion = answer.Substring(LastWordIndex, answer.Length - LastWordIndex);
+                answer = answer.Remove(LastWordIndex);
+                answer = answer.Trim();
+                // //"\rSWITCH_1_2>sh system id\rUnit    MAC address    Hardware version Serial number ---- ----------------- ---------------- -------------  1   e8:28:c1:5d:5f:60"
+                LastWordIndex = answer.LastIndexOf(' ') + 1;
+                MACaddress = answer.Substring(LastWordIndex, answer.Length - LastWordIndex);
+            }
+            networkDevice.MACaddress = MACaddress;
+            networkDevice.HardwareVersion = HardwareVersion;
+            networkDevice.Serial = SerialNumber;
+        }
+
+        // Получение строки ответов на комманды от коммутатора
+        private string GetDeviceResponse(ShellStream stream)
+        {
+            string line;
+            string result = "";
+            // Сократим начало выражения "_ea.GetEvent<MessageSentEvent>()" обозвав его "ev"
+            MessageSentEvent ev = _ea.GetEvent<MessageSentEvent>();
+
+            while ((line = stream.ReadLine(TimeSpan.FromSeconds(2))) != null)
+            {
+                ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, line));
+                result += line;
+            }
+            return result;
+        }
+
     }
 }

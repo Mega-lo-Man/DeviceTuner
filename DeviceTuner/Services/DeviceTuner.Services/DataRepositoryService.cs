@@ -23,6 +23,11 @@ namespace DeviceTuner.Services
             return tempDevs;
         }
 
+        public bool SaveDevice(NetworkDevice networkDevice)
+        {
+            throw new NotImplementedException();
+        }
+
         public void SetDevices(List<NetworkDevice> devices)
         {
             tempDevs.Clear();

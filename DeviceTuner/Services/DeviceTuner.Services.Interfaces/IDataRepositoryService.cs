@@ -9,5 +9,6 @@ namespace DeviceTuner.Services.Interfaces
     {
         List<NetworkDevice> GetDevices();
         void SetDevices(List<NetworkDevice> devices);
+        bool SaveDevice(NetworkDevice networkDevice);
     }
 }

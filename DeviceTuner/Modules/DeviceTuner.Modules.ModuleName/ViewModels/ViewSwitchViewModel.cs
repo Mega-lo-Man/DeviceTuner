@@ -83,6 +83,12 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             set { SetProperty(ref _currentItemTextBox, value); }
         }
 
+        private string _messageForUser = "1";
+        public string MessageForUser
+        {
+            get { return _messageForUser; }
+            set { SetProperty(ref _messageForUser, value); }
+        }
         #endregion
 
         public ObservableCollection<NetworkDevice> SwitchList { get; set; } //Список коммутаторов
@@ -149,13 +155,12 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             foreach (NetworkDevice networkDevice in SwitchList)
             {
                 CurrentItemTextBox = networkDevice.AddressIP;// Вывод адреса коммутатора
-                //networkDevice.Serial =  Task<string>.Run(() => DownloadStateMachineAsync(networkDevice));
-                if(!UploadConfigStateMachineAsync(networkDevice)) throw new NotImplementedException("Whats wrong");
+                if(!UploadConfigStateMachine(networkDevice)) throw new NotImplementedException("Something went wrong");
+                
             }
-            
         }
 
-        private bool UploadConfigStateMachineAsync(NetworkDevice nDevice)
+        private bool UploadConfigStateMachine(NetworkDevice nDevice)
         {
             //NetworkDevice _netDevice = nDevice;
             int State = 0;
@@ -165,11 +170,12 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
                 {
                     case 0:
                         // Пингуем в цикле коммутатор по дефолтному адресу пока коммутатор не ответит на пинг
+                        MessageForUser = "Ожидание коммутатора";
                         if (SendPing(DefaultIP)) State = 1;
                         break;
                     case 1:
                         // Пытаемся в цикле подключиться по Telenet (сервер Telnet загружается через некоторое время после успешного пинга)
-                        if (_telnetSender.CreateConnection(DefaultIP, _telnetPort, DefaultLogin, DefaultPassword)) State = 2;
+                        if (_telnetSender.CreateConnection(DefaultIP, _telnetPort, DefaultLogin, DefaultPassword, null)) State = 2;
                         break;
                     case 2:
                         // Заливаем первую часть конфига в коммутатор по Telnet
@@ -180,13 +186,15 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
                         break;
                     case 3:
                         // Пытаемся в цикле подключиться к SSH-серверу
-                        if (_sshSender.CreateConnection(nDevice.AddressIP, _sshPort, NewLogin, NewPassword)) State = 4;
+                        if (_sshSender.CreateConnection(nDevice.AddressIP, _sshPort, NewLogin, NewPassword, @"id_rsa.key")) State = 4;
                         break;
                     case 4:
                         // Заливаем вторую часть конфига по SSH-протоколу
                         _sshSender.Send(nDevice, GetSettingsDict());
                         // Закрываем SSH-соединение
                         _sshSender.CloseConnection();
+                        string RemoveDeviceStr = "Замени коммутатор!";
+                        MessageForUser = RemoveDeviceStr;
                         State = 5;
                         break;
                     case 5:
@@ -200,7 +208,6 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
                 }
                 // Go to пункт 1
             }
-
             return true;
         }
 
@@ -230,7 +237,6 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
                 Debug.Print("Ping exception: " + ex.Message);
                 return false;
             }
-            
         }
 
         private Dictionary<string, string> GetSettingsDict()
@@ -246,10 +252,8 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             return settingsDict;
         }
         
-
         private void MessageReceived(Tuple<int, string> message/*string message*/)
         {
-
             if (message.Item1 == MessageSentEvent.RepositoryUpdated)
             {
                 SwitchList.Clear();

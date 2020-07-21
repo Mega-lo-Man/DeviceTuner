@@ -30,7 +30,7 @@ namespace DeviceTuner.Services
             return true;
         }
 
-        public bool CreateConnection(string IPaddress, ushort Port, string Username, string Password)
+        public bool CreateConnection(string IPaddress, ushort Port, string Username, string Password, string KeyFile)
         {
             if (_tc.CreateConnection(IPaddress, Port))
             {
@@ -63,8 +63,8 @@ namespace DeviceTuner.Services
 
         private bool PacketSendToTelnet()
         {
-            //_tc = new TelnetConnection();
-            var ev = _ea.GetEvent<MessageSentEvent>();
+            // Сократим начало выражения "_ea.GetEvent<MessageSentEvent>()" обозвав его "ev"
+            MessageSentEvent ev = _ea.GetEvent<MessageSentEvent>();
             
             ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("conf t")));
             ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("hostname " + _networkDevice.Designation)));
@@ -88,7 +88,7 @@ namespace DeviceTuner.Services
 
             ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("interface vlan 1")));
 
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("ip address " + _networkDevice.AddressIP + " / " + _sDict["SSH_Port"])));
+            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("ip address " + _networkDevice.AddressIP + " /" + _sDict["IPmask"])));
             return true;
         }
     }
