@@ -30,22 +30,11 @@ namespace DeviceTuner
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            ConnectionInfo ConnNfo = new ConnectionInfo("192.168.1.239", "admin",
-                    new AuthenticationMethod[] {
-                                //Password based Authentication
-                                new PasswordAuthenticationMethod("192.168.1.239", "admin"),
-                                //Key Based Authentication (using keys in OpneSSH format)
-                                new PrivateKeyAuthenticationMethod("admin", new PrivateKeyFile[]
-                                {
-                                    new PrivateKeyFile(@"id_rsa.key", "testrsa") //@"..\openssh.key"
-                                }),
-                    });
-
             containerRegistry.RegisterSingleton<IMessageService, MessageService>();
             containerRegistry.RegisterSingleton<IDataRepositoryService, DataRepositoryService>();
             containerRegistry.Register<IDialogService, DialogService>();
             containerRegistry.Register<IExcelDataDecoder, ExcelDataDecoder>();
-            containerRegistry.GetContainer().RegisterInstance(ConnNfo);
+            //containerRegistry.GetContainer().RegisterInstance(ConnNfo);
             containerRegistry.GetContainer().Register<ISender, Telnet_Sender>(serviceKey: srvKey.telnetKey);
             containerRegistry.GetContainer().Register<ISender, SSH_Sender>(serviceKey: srvKey.sshKey);
         }

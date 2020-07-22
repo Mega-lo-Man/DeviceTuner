@@ -14,11 +14,11 @@ namespace DeviceTuner.Services
     {
         private SshClient _sshClient;
         private EventAggregator _ea;
+        private Dictionary<string, string> _sDict;
 
-        public SSH_Sender(EventAggregator ea, SshClient sshClient)
+        public SSH_Sender(EventAggregator ea)
         {
             _ea = ea;
-            _sshClient = sshClient;
         }
 
         public bool CloseConnection()
@@ -31,7 +31,7 @@ namespace DeviceTuner.Services
         {
             try
             {
-                
+                // => Dependency injection!
                 ConnectionInfo ConnNfo = new ConnectionInfo(IPaddress, Username,
                     new AuthenticationMethod[] {
                                 //Password based Authentication
@@ -56,8 +56,8 @@ namespace DeviceTuner.Services
 
         public NetworkDevice Send(NetworkDevice networkDevice, Dictionary<string, string> SettingsDict)
         {
-            
-            
+            _sDict = SettingsDict;
+
             ShellStream stream = _sshClient.CreateShellStream("", 0, 0, 0, 0, 0);
 
             stream.WriteLine("sh system id");
@@ -65,7 +65,7 @@ namespace DeviceTuner.Services
             GetIDoverSSH(GetDeviceResponse(stream), networkDevice);
 
             stream.WriteLine("en");
-            stream.WriteLine("admin123");
+            stream.WriteLine(_sDict["NewAdminPassword"]);
             stream.WriteLine("conf t");
             stream.WriteLine("no ip telnet server");
             stream.WriteLine("exit");
