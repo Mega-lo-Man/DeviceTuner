@@ -4,6 +4,7 @@ using DeviceTuner.SharedDataModel;
 using DeviceTuner.Core;
 using Prism.Events;
 using System;
+using System.Windows.Data;
 
 namespace DeviceTuner.Services
 {
@@ -11,11 +12,15 @@ namespace DeviceTuner.Services
     {
         private List<NetworkDevice> tempDevs = new List<NetworkDevice>();
 
-        IEventAggregator _ea;
+        private IEventAggregator _ea;
+        private IExcelDataDecoder _excelDataDecoder;
+        private enum dataSource { Excel, ODBC } 
+        private int DataSourceType = 1; //Excel
 
-        public DataRepositoryService(IEventAggregator ea)
+        public DataRepositoryService(IEventAggregator ea, IExcelDataDecoder excelDataDecoder)
         {
             _ea = ea;
+            _excelDataDecoder = excelDataDecoder;
         }
 
         public List<NetworkDevice> GetDevices()
@@ -25,7 +30,13 @@ namespace DeviceTuner.Services
 
         public bool SaveDevice(NetworkDevice networkDevice)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+            if (DataSourceType == 1) // Если источник данных - таблица Excel
+            {
+                _excelDataDecoder.SaveDevice(networkDevice);
+                return true;
+            }
+            return false;
         }
 
         public void SetDevices(List<NetworkDevice> devices)

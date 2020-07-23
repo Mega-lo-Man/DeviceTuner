@@ -155,8 +155,8 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             foreach (NetworkDevice networkDevice in SwitchList)
             {
                 CurrentItemTextBox = networkDevice.AddressIP;// Вывод адреса коммутатора
-                if(!UploadConfigStateMachine(networkDevice)) throw new NotImplementedException("Something went wrong");
-                
+                if (!UploadConfigStateMachine(networkDevice)) throw new NotImplementedException("Something went wrong");
+                else _dataRepositoryService.SaveDevice(networkDevice);
             }
         }
 
