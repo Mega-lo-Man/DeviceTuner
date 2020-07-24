@@ -33,7 +33,7 @@ namespace DeviceTuner
             containerRegistry.RegisterSingleton<IMessageService, MessageService>();
             containerRegistry.RegisterSingleton<IDataRepositoryService, DataRepositoryService>();
             containerRegistry.Register<IDialogService, DialogService>();
-            containerRegistry.Register<IExcelDataDecoder, ExcelDataDecoder>();
+            containerRegistry.RegisterSingleton<IExcelDataDecoder, ExcelDataDecoder>();
             //containerRegistry.GetContainer().RegisterInstance(ConnNfo);
             containerRegistry.GetContainer().Register<ISender, Telnet_Sender>(serviceKey: srvKey.telnetKey);
             containerRegistry.GetContainer().Register<ISender, SSH_Sender>(serviceKey: srvKey.sshKey);

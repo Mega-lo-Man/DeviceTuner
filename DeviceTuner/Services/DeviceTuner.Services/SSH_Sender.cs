@@ -70,7 +70,7 @@ namespace DeviceTuner.Services
             stream.WriteLine("no ip telnet server");
             stream.WriteLine("exit");
             stream.WriteLine("wr mem");
-            stream.WriteLine("Y");
+            stream.WriteLine("N");
 
             GetDeviceResponse(stream);
 

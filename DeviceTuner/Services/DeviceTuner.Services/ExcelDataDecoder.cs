@@ -27,7 +27,15 @@ namespace DeviceTuner.Services
         private ExcelWorksheet worksheet;
         int rows; // number of rows in the sheet
         int columns;//number of columns in the sheet
-        
+
+        public ExcelDataDecoder()
+        {
+            // Remove "IBM437 is not a supported encoding" error
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+        }
+
         private int GetDeviceType(string DevName)
         {
             int devType = 0;
@@ -43,12 +51,8 @@ namespace DeviceTuner.Services
             sourceFile = new FileInfo(excelFileFullPath);
             List<NetworkDevice> devices = new List<NetworkDevice>();
 
-            // Remove "IBM437 is not a supported encoding" error
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             package = new ExcelPackage(sourceFile);
-            
+
             worksheet = package.Workbook.Worksheets["Адреса"];
             /*
             worksheet.Cells[1, 1].Value = "tytytyty";
@@ -59,24 +63,20 @@ namespace DeviceTuner.Services
             columns = worksheet.Dimension.Columns; // 7
 
             //Определяем в каких столбцах находятся обозначения приборов и их адреса
-            for (int colIndex = 1; colIndex <= columns; colIndex++)
-            {
-                string content = worksheet.Cells[CaptionRow, colIndex].Value?.ToString();
-                if (content == ColNamesCaption) { nameCol = colIndex; }
-                if (content == ColAddressCaption) { addressCol = colIndex; }
-                if (content == ColSerialCaption) { serialCol = colIndex; }
-                if (content == ColModelCaption) { modelCol = colIndex; }
-            }
-            //
+            FindColumnIndexesByHeader();
+            
             for (int rowIndex = CaptionRow + 1; rowIndex <= rows; rowIndex++)
             {
                 string devName = worksheet.Cells[rowIndex, nameCol].Value?.ToString();
                 string devModel = worksheet.Cells[rowIndex, modelCol].Value?.ToString();
                 string devAddr = worksheet.Cells[rowIndex, addressCol].Value?.ToString();
-                if (devAddr != null && devName != null)
+                string devSerial = worksheet.Cells[rowIndex, serialCol].Value?.ToString();
+                //Чтобы попасть в список устройств для заливки конфига, дивайс должен иметь адрес, 
+                //обозначение и отсутсвие серийника.
+                if (devAddr != null && devName != null && devSerial == null)
                 {
                     // Проверяем содержит ли строка адрес. Парсинг + три точки-разделителя в адресной строке (X.X.X.X)
-                    if (IPAddress.TryParse(devAddr, out System.Net.IPAddress parseAddress) && (devAddr.Split('.').Length - 1) == 3)
+                    if (IPAddress.TryParse(devAddr, out IPAddress parseAddress) && (devAddr.Split('.').Length - 1) == 3)
                     {
                         //Valid IP, with address containing the IP
                         switch (GetDeviceType(devModel))
@@ -86,8 +86,6 @@ namespace DeviceTuner.Services
                                 {
                                     Designation = devName,
                                     AddressIP = parseAddress.ToString(),
-                                    //ExcelRowIndex = rowIndex,
-                                    //DownloadedSuccessfully = false
                                 });
                                 break;
                             case 2:
@@ -99,6 +97,18 @@ namespace DeviceTuner.Services
                 }
             }
             return devices;
+        }
+
+        private void FindColumnIndexesByHeader()
+        {
+            for (int colIndex = 1; colIndex <= columns; colIndex++)
+            {
+                string content = worksheet.Cells[CaptionRow, colIndex].Value?.ToString();
+                if (content == ColNamesCaption) { nameCol = colIndex; }
+                if (content == ColAddressCaption) { addressCol = colIndex; }
+                if (content == ColSerialCaption) { serialCol = colIndex; }
+                if (content == ColModelCaption) { modelCol = colIndex; }
+            }
         }
 
         public bool SaveDevice<T>(T arg) where T : SimplestСomponent
@@ -116,6 +126,7 @@ namespace DeviceTuner.Services
             {
                 // записываем серийник коммутатора в графу "Серийный номер" напротив IP-адреса этого коммутатора
                 worksheet.Cells[foundRow.Value, serialCol].Value = networkDevice.Serial;
+                package.Save();
                 return true;
             }
             return false;
