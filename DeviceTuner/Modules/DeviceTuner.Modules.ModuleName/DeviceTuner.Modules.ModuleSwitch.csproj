@@ -10,5 +10,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\DeviceTuner.Core\DeviceTuner.Core.csproj" />
     <ProjectReference Include="..\..\Services\DeviceTuner.Services.Interfaces\DeviceTuner.Services.Interfaces.csproj" />
+    <ProjectReference Include="..\..\Services\DeviceTuner.Services\DeviceTuner.Services.csproj" />
   </ItemGroup>
 </Project>

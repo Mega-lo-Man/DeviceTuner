@@ -8,6 +8,7 @@ using DeviceTuner.Services;
 using DeviceTuner.Modules.ModuleRS485;
 using DryIoc;
 using Prism.DryIoc;
+using DeviceTuner.Modules.ModuleSwitch.Models;
 
 namespace DeviceTuner
 {
@@ -29,6 +30,7 @@ namespace DeviceTuner
             containerRegistry.RegisterSingleton<IDataRepositoryService, DataRepositoryService>();
             containerRegistry.Register<IDialogService, DialogService>();
             containerRegistry.Register<IExcelDataDecoder, ExcelDataDecoder>();
+            containerRegistry.Register<INetworkTasks, NetworkTasks>();
             containerRegistry.GetContainer().Register<ISender, Telnet_Sender>(serviceKey: srvKey.telnetKey);
             containerRegistry.GetContainer().Register<ISender, SSH_Sender>(serviceKey: srvKey.sshKey);
         }

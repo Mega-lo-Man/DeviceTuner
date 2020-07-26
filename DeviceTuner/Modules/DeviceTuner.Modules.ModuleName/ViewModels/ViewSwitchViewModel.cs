@@ -1,5 +1,6 @@
 ﻿using DeviceTuner.Core;
 using DeviceTuner.Core.Mvvm;
+using DeviceTuner.Modules.ModuleSwitch.Models;
 using DeviceTuner.Services.Interfaces;
 using DeviceTuner.SharedDataModel;
 using Prism.Commands;
@@ -8,11 +9,6 @@ using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace DeviceTuner.Modules.ModuleName.ViewModels
@@ -93,26 +89,22 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
 
         public ObservableCollection<NetworkDevice> SwitchList { get; set; } //Список коммутаторов
 
-        private ISender _telnetSender;
-        private ISender _sshSender;
-        private IEventAggregator _ea;
-        private IDataRepositoryService _dataRepositoryService;
-        private ushort _telnetPort = 23;
-        private ushort _sshPort = 22;
+        private readonly IEventAggregator _ea;
+        private readonly IDataRepositoryService _dataRepositoryService;
+        private readonly INetworkTasks _networkTasks;
         //private IMessageService _messageService;
 
         public ViewSwitchViewModel(IRegionManager regionManager,
-                                    IMessageService messageService,
+                                    //IMessageService messageService,
                                     IDataRepositoryService dataRepositoryService,
-                                    IEventAggregator ea,
-                                    IEnumerable<ISender> senders) : base(regionManager)
+                                    INetworkTasks networkTasks,
+                                    IEventAggregator ea) : base(regionManager)
         {
             _ea = ea;
-            
             _dataRepositoryService = dataRepositoryService;
+            _networkTasks = networkTasks;
+                        
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
-            _telnetSender = senders.ElementAt(0);
-            _sshSender = senders.ElementAt(1);
 
             SwitchList = new ObservableCollection<NetworkDevice>();
 
@@ -120,7 +112,7 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             UncheckedCommand = new DelegateCommand(StopCommandExecute, StopCommandCanExecute);
 
             Title = "Switch";
-            Message = messageService.GetMessage();
+            //Message = messageService.GetMessage();
         }
 
         #region Commands
@@ -139,9 +131,9 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
 
         private bool StartCommandCanExecute()
         {
-            if (SwitchList.Count > 0)
+            if (SwitchList.Count > 0) // В списке для настройки есть коммутаторы?
                 return true;
-            else return false;
+            else return false; 
         }
 
         private Task StartCommandExecuteAsync()
@@ -155,93 +147,15 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             foreach (NetworkDevice networkDevice in SwitchList)
             {
                 CurrentItemTextBox = networkDevice.AddressIP;// Вывод адреса коммутатора
-                if (!UploadConfigStateMachine(networkDevice)) throw new NotImplementedException("Something went wrong");
+                if (!_networkTasks.UploadConfigStateMachine(networkDevice, GetSettingsDict()))
+                    throw new Exception("Something went wrong in upload config procedure");
                 else _dataRepositoryService.SaveDevice(networkDevice);
             }
         }
-
-        private bool UploadConfigStateMachine(NetworkDevice nDevice)
-        {
-            //NetworkDevice _netDevice = nDevice;
-            int State = 0;
-            while (State < 6)
-            {
-                switch (State)
-                {
-                    case 0:
-                        // Пингуем в цикле коммутатор по дефолтному адресу пока коммутатор не ответит на пинг
-                        MessageForUser = "Ожидание коммутатора";
-                        if (SendPing(DefaultIP)) State = 1;
-                        break;
-                    case 1:
-                        // Пытаемся в цикле подключиться по Telenet (сервер Telnet загружается через некоторое время после успешного пинга)
-                        if (_telnetSender.CreateConnection(DefaultIP, _telnetPort, DefaultLogin, DefaultPassword, null)) State = 2;
-                        break;
-                    case 2:
-                        // Заливаем первую часть конфига в коммутатор по Telnet
-                        _telnetSender.Send(nDevice, GetSettingsDict());
-                        // Закрываем Telnet соединение
-                        _telnetSender.CloseConnection();
-                        State = 3;
-                        break;
-                    case 3:
-                        // Пытаемся в цикле подключиться к SSH-серверу
-                        if (_sshSender.CreateConnection(nDevice.AddressIP, _sshPort, NewLogin, NewPassword, @"id_rsa.key")) State = 4;
-                        break;
-                    case 4:
-                        // Заливаем вторую часть конфига по SSH-протоколу
-                        _sshSender.Send(nDevice, GetSettingsDict());
-                        // Закрываем SSH-соединение
-                        _sshSender.CloseConnection();
-                        string RemoveDeviceStr = "Замени коммутатор!";
-                        MessageForUser = RemoveDeviceStr;
-                        State = 5;
-                        break;
-                    case 5:
-                        // Пингуем в цикле коммутатор по новому IP-адресу (как только пинг пропал - коммутатор отключили)
-                        if (!SendPing(nDevice.AddressIP)) State = 6;
-                        break;
-                    case 6:
-                        break;
-                    default:
-                        break;
-                }
-                // Go to пункт 1
-            }
-            return true;
-        }
-
-        private bool SendPing(string NewIPAddress)
-        {
-            Ping pingSender = new Ping();
-            PingOptions options = new PingOptions
-            {
-                // Use the default Ttl value which is 128,
-                // but change the fragmentation behavior.
-                DontFragment = true
-            };
-
-            // Create a buffer of 32 bytes of data to be transmitted.
-            string data = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-            byte[] buffer = Encoding.ASCII.GetBytes(data);
-            int timeout = 120;
-            PingReply reply;
-            try
-            {
-                reply = pingSender.Send(NewIPAddress, timeout, buffer, options);
-                if (reply.Status == IPStatus.Success) return true;
-                else return false;
-            }
-            catch (Exception ex)
-            {
-                Debug.Print("Ping exception: " + ex.Message);
-                return false;
-            }
-        }
-
+        
+        // Формирование словаря с необходимыми данными для настройки коммутаторов (логин, пароль, адрес по умолчанию и т.п.)
         private Dictionary<string, string> GetSettingsDict()
         {
-            //throw new NotImplementedException();
             Dictionary<string, string> settingsDict = new Dictionary<string, string>();
             settingsDict.Add("DefaultIPAddress", DefaultIP);
             settingsDict.Add("DefaultAdminLogin", DefaultLogin); 
@@ -252,7 +166,7 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             return settingsDict;
         }
         
-        private void MessageReceived(Tuple<int, string> message/*string message*/)
+        private void MessageReceived(Tuple<int, string> message)
         {
             if (message.Item1 == MessageSentEvent.RepositoryUpdated)
             {
@@ -262,6 +176,10 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
                     if (item.Serial == null)//исключаем коммутаторы уже имеющие серийник (они уже были сконфигурированны)
                         SwitchList.Add(item);
                 }
+            }
+            if(message.Item1 == MessageSentEvent.NeedOfActionUser)
+            {
+                MessageForUser = message.Item2;// Обновим информацию для пользователя 
             }
         }
 
