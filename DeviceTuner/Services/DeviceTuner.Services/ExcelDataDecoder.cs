@@ -46,7 +46,7 @@ namespace DeviceTuner.Services
             return devType;
         }
 
-        public List<NetworkDevice> GetNetworkDevices(string excelFileFullPath)
+        public List<NetworkDevice> GetSwitchDevices(string excelFileFullPath)
         {
             sourceFile = new FileInfo(excelFileFullPath);
             List<NetworkDevice> devices = new List<NetworkDevice>();

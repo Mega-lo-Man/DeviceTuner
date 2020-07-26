@@ -1,5 +1,4 @@
 ﻿using DeviceTuner.Services.Interfaces;
-using DeviceTuner.SharedDataModel;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
@@ -17,23 +16,20 @@ namespace DeviceTuner.ViewModels
         }
 
         private IDialogService _dialogService;
-        private IExcelDataDecoder _excelDataDecoder;
         private IDataRepositoryService _dataRepositoryService;
 
         public DelegateCommand OpenFileCommand { get; private set; }
         public DelegateCommand SaveFileCommand { get; private set; }
         public DelegateCommand CloseAppCommand { get; private set; }
 
-        public MainWindowViewModel(IDialogService dialogService, IExcelDataDecoder excelDataDecoder, IDataRepositoryService dataRepositoryService)
+        public MainWindowViewModel(IDialogService dialogService, IDataRepositoryService dataRepositoryService)
         {
             _dialogService = dialogService;
-            _excelDataDecoder = excelDataDecoder;
             _dataRepositoryService = dataRepositoryService;
+
             OpenFileCommand = new DelegateCommand(OpenFileExecute, OpenFileCanExecute);
             SaveFileCommand = new DelegateCommand(SaveFileExecute, SaveFileCanExecute);
             CloseAppCommand = new DelegateCommand(CloseAppExecute, CloseAppCanExecute);
-
-
         }
 
         private bool CloseAppCanExecute()
@@ -66,10 +62,9 @@ namespace DeviceTuner.ViewModels
             if(_dialogService.OpenFileDialog())
             {
                 string selectedFile = _dialogService.FullFileNames;
-                
-                _dataRepositoryService.SetDevices(_excelDataDecoder.GetNetworkDevices(selectedFile));
-
-                
+                _dataRepositoryService.DataProviderType = 1; // Поставщик данных - Excel
+                _dataRepositoryService.FullPathToData = selectedFile; // Путь к Excel-файлу
+                _dataRepositoryService.SetDevices(); //Устанавливаем список всех устройств в репозитории
             }
         }
     }

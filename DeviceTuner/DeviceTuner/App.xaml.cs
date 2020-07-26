@@ -6,10 +6,8 @@ using DeviceTuner.Modules.ModuleName;
 using DeviceTuner.Services.Interfaces;
 using DeviceTuner.Services;
 using DeviceTuner.Modules.ModuleRS485;
-using DeviceTuner.Core;
 using DryIoc;
 using Prism.DryIoc;
-using Renci.SshNet;
 
 namespace DeviceTuner
 {
@@ -18,7 +16,6 @@ namespace DeviceTuner
     /// </summary>
     public partial class App
     {
-
         enum srvKey { telnetKey, sshKey };
 
         protected override Window CreateShell()
@@ -26,15 +23,12 @@ namespace DeviceTuner
             return Container.Resolve<MainWindow>();
         }
 
-        //protected override Rules CreateContainerRules() => Rules.Default.WithDefaultIfAlreadyRegistered(IfAlreadyRegistered.AppendNewImplementation);
-
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterSingleton<IMessageService, MessageService>();
             containerRegistry.RegisterSingleton<IDataRepositoryService, DataRepositoryService>();
             containerRegistry.Register<IDialogService, DialogService>();
-            containerRegistry.RegisterSingleton<IExcelDataDecoder, ExcelDataDecoder>();
-            //containerRegistry.GetContainer().RegisterInstance(ConnNfo);
+            containerRegistry.Register<IExcelDataDecoder, ExcelDataDecoder>();
             containerRegistry.GetContainer().Register<ISender, Telnet_Sender>(serviceKey: srvKey.telnetKey);
             containerRegistry.GetContainer().Register<ISender, SSH_Sender>(serviceKey: srvKey.sshKey);
         }

@@ -111,9 +111,9 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             
             _dataRepositoryService = dataRepositoryService;
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
-            
             _telnetSender = senders.ElementAt(0);
             _sshSender = senders.ElementAt(1);
+
             SwitchList = new ObservableCollection<NetworkDevice>();
 
             CheckedCommand = new DelegateCommand(async () => await StartCommandExecuteAsync(), StartCommandCanExecute);
@@ -257,7 +257,7 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             if (message.Item1 == MessageSentEvent.RepositoryUpdated)
             {
                 SwitchList.Clear();
-                foreach (NetworkDevice item in _dataRepositoryService.GetDevices())
+                foreach (NetworkDevice item in _dataRepositoryService.GetSwitchDevices())
                 {
                     if (item.Serial == null)//исключаем коммутаторы уже имеющие серийник (они уже были сконфигурированны)
                         SwitchList.Add(item);
