@@ -9,7 +9,11 @@ using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Drawing;
 using System.Threading.Tasks;
+using System.Windows.Data;
+using System.Windows.Threading;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace DeviceTuner.Modules.ModuleName.ViewModels
 {
@@ -85,13 +89,27 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             get { return _messageForUser; }
             set { SetProperty(ref _messageForUser, value); }
         }
-        #endregion
 
-        public ObservableCollection<NetworkDevice> SwitchList { get; set; } //Список коммутаторов
+        private bool _sliderIsChecked = false;
+        public bool SliderIsChecked
+        {
+            get { return _sliderIsChecked; }
+            set { SetProperty(ref _sliderIsChecked, value); }
+        }
+
+        private ObservableCollection<NetworkDevice> _switchList;
+        public ObservableCollection<NetworkDevice> SwitchList //Список коммутаторов
+        {
+            get { return _switchList; }
+            set { SetProperty(ref _switchList, value); } 
+        }
+
+        #endregion
 
         private readonly IEventAggregator _ea;
         private readonly IDataRepositoryService _dataRepositoryService;
         private readonly INetworkTasks _networkTasks;
+        private readonly Dispatcher _dispatcher;
         //private IMessageService _messageService;
 
         public ViewSwitchViewModel(IRegionManager regionManager,
@@ -111,7 +129,10 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             CheckedCommand = new DelegateCommand(async () => await StartCommandExecuteAsync(), StartCommandCanExecute);
             UncheckedCommand = new DelegateCommand(StopCommandExecute, StopCommandCanExecute);
 
-            Title = "Switch";
+            Title = "Switch"; // Заголовок вкладки
+
+            _dispatcher = Dispatcher.CurrentDispatcher;
+
             //Message = messageService.GetMessage();
         }
 
@@ -142,15 +163,26 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
         }
         #endregion
 
+        // Основной цикл - заливка в каждый коммутатор настроек из списка SwitchList
         private void DownloadLoop()
         {
             foreach (NetworkDevice networkDevice in SwitchList)
             {
-                CurrentItemTextBox = networkDevice.AddressIP;// Вывод адреса коммутатора
-                if (!_networkTasks.UploadConfigStateMachine(networkDevice, GetSettingsDict()))
-                    throw new Exception("Something went wrong in upload config procedure");
-                else _dataRepositoryService.SaveDevice(networkDevice);
+                if (networkDevice.Serial == null)//исключаем коммутаторы уже имеющие серийник (они уже были сконфигурированны)
+                {
+                    CurrentItemTextBox = networkDevice.AddressIP;// Вывод адреса коммутатора в UI
+
+                    if (!_networkTasks.UploadConfigStateMachine(networkDevice, GetSettingsDict()))
+                        throw new Exception("Something went wrong in upload config procedure");
+                    else _dataRepositoryService.SaveDevice(networkDevice);
+                    // Обновляем всю коллекцию d UI целиком
+                    _dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            CollectionViewSource.GetDefaultView(SwitchList).Refresh();
+                        }));
+                }
             }
+            SliderIsChecked = false; // Всё! Залили настройки во все коммутаторы. Вырубаем слайдер (пололжение OFF)
         }
         
         // Формирование словаря с необходимыми данными для настройки коммутаторов (логин, пароль, адрес по умолчанию и т.п.)
@@ -173,7 +205,6 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
                 SwitchList.Clear();
                 foreach (NetworkDevice item in _dataRepositoryService.GetSwitchDevices())
                 {
-                    if (item.Serial == null)//исключаем коммутаторы уже имеющие серийник (они уже были сконфигурированны)
                         SwitchList.Add(item);
                 }
             }

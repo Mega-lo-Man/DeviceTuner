@@ -1,23 +1,22 @@
 ﻿<UserControl x:Class="DeviceTuner.Modules.ModuleName.Views.ViewSwitch"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="clr-namespace:DeviceTuner.Modules.ModuleSwitch.ViewModels"
              xmlns:local="clr-namespace:DeviceTuner.Modules.ModuleName.Views"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True" 
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity">
+
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/DeviceTuner.Modules.ModuleName;component/Views/Dictionary1.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <d:DesignSwitchConverter x:Key="ItemColorConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
 
     <Grid>
-        <!--<TextBlock Text="{Binding Message}"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   FontSize="24"/>-->
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"/>
             <RowDefinition Height="1*"/>
@@ -29,7 +28,7 @@
             <ColumnDefinition Width="1*"/>
         </Grid.ColumnDefinitions>
 
-        <StackPanel Orientation="Vertical" Grid.RowSpan="2">
+        <StackPanel Orientation="Vertical" Grid.RowSpan="2" >
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="1*"/>
@@ -109,10 +108,10 @@
         <ListBox x:Name="listBox" ItemsSource="{Binding Path=SwitchList}" SelectedItem="{Binding Path=SelectedDevice}" Grid.Row="0" Grid.Column="1" Margin="5" Grid.RowSpan="2">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Margin="5">
+                    <StackPanel Margin="2" Background="{Binding Serial, Converter={StaticResource ItemColorConverter}}" HorizontalAlignment="Stretch">
                         <TextBlock Text="{Binding Designation}" />
                         <TextBlock Text="{Binding AddressIP}" />
-                        <TextBlock Text="{Binding AddressRS485}" />
+                        <TextBlock Text="{Binding Serial}" />
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
@@ -130,7 +129,7 @@
             </Grid.RowDefinitions>
             <Label Name="CurrentItemIP" Margin="3" Grid.Row="0" Foreground ="black" Content ="{Binding CurrentItemTextBox}"  HorizontalAlignment="Stretch" VerticalContentAlignment="Center" FontSize="24" FontWeight="Bold" />
             <Label Name="ChangeDevice" Visibility="{Binding ChangeDeviceFireUp}" Margin="3" Grid.Row="1" Background ="red" Foreground ="black" Content ="{Binding MessageForUser}"  HorizontalAlignment="Stretch" VerticalContentAlignment="Center" FontSize="24" FontWeight="Bold" />
-            <ToggleButton Grid.Row="2" Content="ON LINE MODE" Style="{StaticResource ToggleButtonStyle1}">
+            <ToggleButton Grid.Row="2" Content="ON LINE MODE" Style="{StaticResource ToggleButtonStyle1}" IsChecked="{Binding Path=SliderIsChecked, Mode=TwoWay}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Checked">
                         <i:InvokeCommandAction Command="{Binding Path=CheckedCommand}"/>

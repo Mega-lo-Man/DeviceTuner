@@ -71,9 +71,8 @@ namespace DeviceTuner.Services
                 string devModel = worksheet.Cells[rowIndex, modelCol].Value?.ToString();
                 string devAddr = worksheet.Cells[rowIndex, addressCol].Value?.ToString();
                 string devSerial = worksheet.Cells[rowIndex, serialCol].Value?.ToString();
-                //Чтобы попасть в список устройств для заливки конфига, дивайс должен иметь адрес, 
-                //обозначение и отсутсвие серийника.
-                if (devAddr != null && devName != null && devSerial == null)
+                //Чтобы попасть в список устройств для заливки конфига, дивайс должен иметь адрес, обозначение
+                if (devAddr != null && devName != null)
                 {
                     // Проверяем содержит ли строка адрес. Парсинг + три точки-разделителя в адресной строке (X.X.X.X)
                     if (IPAddress.TryParse(devAddr, out IPAddress parseAddress) && (devAddr.Split('.').Length - 1) == 3)
@@ -86,6 +85,7 @@ namespace DeviceTuner.Services
                                 {
                                     Designation = devName,
                                     AddressIP = parseAddress.ToString(),
+                                    Serial = devSerial
                                 });
                                 break;
                             case 2:
