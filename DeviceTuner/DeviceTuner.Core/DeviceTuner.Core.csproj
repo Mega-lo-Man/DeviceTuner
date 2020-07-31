@@ -5,6 +5,21 @@
     <AssemblyName>DeviceTuner.Core</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Resources\Images\alert.png" />
+    <None Remove="Resources\Images\cancel.png" />
+    <None Remove="Resources\Images\ok.png" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Prism.Wpf" Version="7.2.0.1422" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\alert.png" />
+    <Resource Include="Resources\Images\cancel.png" />
+    <Resource Include="Resources\Images\ok.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Resources\DictionaryStyles.xaml">
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
 </Project>

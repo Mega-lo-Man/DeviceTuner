@@ -10,9 +10,12 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/DeviceTuner.Modules.ModuleName;component/Views/Dictionary1.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DeviceTuner.core;component/Resources/DictionaryStyles.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DeviceTuner.core;component/Resources/DictionaryImages.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <d:DesignSwitchConverter x:Key="ItemColorConverter"/>
+            <d:DesignSwitchConverter x:Key="ItemColorConverter"
+                                     ImagePathOK="{StaticResource ResourceKey=OkImage}"
+                                     ImagePathCancel="{StaticResource ResourceKey=CancelImage}"/>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -108,11 +111,21 @@
         <ListBox x:Name="listBox" ItemsSource="{Binding Path=SwitchList}" SelectedItem="{Binding Path=SelectedDevice}" Grid.Row="0" Grid.Column="1" Margin="5" Grid.RowSpan="2">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Margin="2" Background="{Binding Serial, Converter={StaticResource ItemColorConverter}}" HorizontalAlignment="Stretch">
-                        <TextBlock Text="{Binding Designation}" />
-                        <TextBlock Text="{Binding AddressIP}" />
-                        <TextBlock Text="{Binding Serial}" />
-                    </StackPanel>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Margin="2" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Stretch">
+                            <TextBlock Text="{Binding Designation}" />
+                            <TextBlock Text="{Binding AddressIP}" />
+                            <TextBlock Text="{Binding Serial}" />
+                        </StackPanel>
+                        <Image Margin="3" Grid.Column="1" Grid.Row="0" Source="{Binding Serial, Converter={StaticResource ItemColorConverter}}"/>
+                    </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
