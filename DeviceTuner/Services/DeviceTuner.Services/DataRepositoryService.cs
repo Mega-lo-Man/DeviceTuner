@@ -16,21 +16,7 @@ namespace DeviceTuner.Services
         private IEventAggregator _ea;
         private IExcelDataDecoder _excelDataDecoder;
         
-        #region Properties
         private int _dataProviderType = 1;
-        public int DataProviderType
-        {
-            get { return _dataProviderType; }
-            set { _dataProviderType = value; }
-        }
-
-        private string _fullPathToData = "";
-        public string FullPathToData
-        {
-            get { return _fullPathToData; }
-            set { _fullPathToData = value; }
-        }
-        #endregion Properties
 
         public DataRepositoryService(IEventAggregator ea, IExcelDataDecoder excelDataDecoder)
         {
@@ -38,22 +24,10 @@ namespace DeviceTuner.Services
             _excelDataDecoder = excelDataDecoder;
         }
 
-        public List<EthernetSwitch> GetSwitchDevices()
-        {
-            if (_fullPathToData == "")
-            {
-                throw new Exception("Не установлен путь до источника данных!");
-            }
-            else
-            {
-                return switchDevs;
-            }
-        }
-
         private bool SaveSwitchDevice(EthernetSwitch ethernetSwitch)
         {
             //throw new NotImplementedException();
-            if (DataProviderType == 1) // Если источник данных - таблица Excel
+            if (_dataProviderType == 1) // Если источник данных - таблица Excel
             {
                 _excelDataDecoder.SaveDevice(ethernetSwitch);
                 return true;
@@ -61,10 +35,15 @@ namespace DeviceTuner.Services
             return false;
         }
 
-        public void SetDevices()
+        public void SetDevices(int DataProviderType, string FullPathToData)
         {
+            _dataProviderType = DataProviderType;
+            string _fullPathToData = FullPathToData;
             switchDevs.Clear();
-            switchDevs = _excelDataDecoder.GetSwitchDevices(FullPathToData);
+            switch (_dataProviderType)
+            {
+                case 1: switchDevs = _excelDataDecoder.GetSwitchDevices(_fullPathToData); break;
+            }
             //Сообщаем об обновлении данных в репозитории
             _ea.GetEvent<MessageSentEvent>().Publish(Tuple.Create(MessageSentEvent.RepositoryUpdated, "1"));
         }
@@ -76,13 +55,10 @@ namespace DeviceTuner.Services
             return false;
         }
 
-        public IList<T> GetDevices<T>(Type arg) where T : SimplestСomponent
+        public IList<T> GetDevices<T>() where T : SimplestСomponent
         {
-            object someDevsType = arg;
-            if (typeof(T) == typeof(EthernetSwitch))
-            {
-                return (IList<T>)switchDevs;
-            }
+            if (typeof(T) == typeof(EthernetSwitch)) return (IList<T>)switchDevs;
+
             return null;
         }
     }

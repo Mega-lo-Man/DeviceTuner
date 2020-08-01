@@ -8,34 +8,21 @@ namespace DeviceTuner.Services.Interfaces
     public interface IDataRepositoryService
     {
         /// <summary>
-        /// Тип поставщика данных (0 - Excel, 1 - SQL-база данных)
+        /// Установить список устройств (найти в источнике данных все устройства)
         /// </summary>
-        int DataProviderType { get; set; }
+        void SetDevices(int DataProviderType, string FullPathToData);
 
         /// <summary>
-        /// Полный путь к источнику данных (Excel-файл, адрес экземпляра базы данных)
+        /// Получить список устройств для настройки
         /// </summary>
-        string FullPathToData { get; set; }
-
-        /// <summary>
-        /// Получить список коммутаторов
-        /// </summary>
-        /// <returns></returns>
-        List<EthernetSwitch> GetSwitchDevices();
-
-        //List<>
-
-        //List<Device>
-
-        /// <summary>
-        /// Установить список устройств
-        /// </summary>
-        void SetDevices();
+        /// <typeparam name="T">тип устройства унаследованный от SimplestComponent</typeparam>
+        /// <returns>Список устройств типа Т</returns>
+        IList<T> GetDevices<T>() where T : SimplestСomponent;
 
         /// <summary>
         /// Записать свойства дивайса в таблицу Excel или базу данных
         /// </summary>
-        /// <typeparam name="T">унаследованный от SimplestComponent</typeparam>
+        /// <typeparam name="T">тип устройства унаследованный от SimplestComponent</typeparam>
         /// <param name="device">экземпляр устройства</param>
         /// <returns>true - есди запись удалась, false - в противном случае</returns>
         bool SaveDevice<T>(T device) where T : SimplestСomponent;

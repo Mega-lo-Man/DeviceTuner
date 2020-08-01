@@ -170,7 +170,7 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
                 if (ethernetSwitch.Serial == null)//исключаем коммутаторы уже имеющие серийник (они уже были сконфигурированны)
                 {
                     CurrentItemTextBox = ethernetSwitch.AddressIP;// Вывод адреса коммутатора в UI
-
+                    
                     if (!_networkTasks.UploadConfigStateMachine(ethernetSwitch, GetSettingsDict()))
                         throw new Exception("Something went wrong in upload config procedure");
                     else _dataRepositoryService.SaveDevice(ethernetSwitch);
@@ -202,10 +202,14 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             if (message.Item1 == MessageSentEvent.RepositoryUpdated)
             {
                 SwitchList.Clear();
-                foreach (EthernetSwitch item in _dataRepositoryService.GetSwitchDevices())
+                foreach (EthernetSwitch item in _dataRepositoryService.GetDevices<EthernetSwitch>())
                 {
                     SwitchList.Add(item);
                 }
+                /*foreach (EthernetSwitch item in _dataRepositoryService.GetSwitchDevices())
+                {
+                    SwitchList.Add(item);
+                }*/
             }
             if(message.Item1 == MessageSentEvent.NeedOfUserAction)
             {

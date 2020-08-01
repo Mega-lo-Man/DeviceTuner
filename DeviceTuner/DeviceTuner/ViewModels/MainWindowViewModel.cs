@@ -61,10 +61,9 @@ namespace DeviceTuner.ViewModels
         {
             if(_dialogService.OpenFileDialog())
             {
-                string selectedFile = _dialogService.FullFileNames;
-                _dataRepositoryService.DataProviderType = 1; // Поставщик данных - Excel
-                _dataRepositoryService.FullPathToData = selectedFile; // Путь к Excel-файлу
-                _dataRepositoryService.SetDevices(); //Устанавливаем список всех устройств в репозитории
+                string selectedFile = _dialogService.FullFileNames; // Путь к Excel-файлу
+                // 1 - Поставщик данных - Excel
+                _dataRepositoryService.SetDevices(1, selectedFile); //Устанавливаем список всех устройств в репозитории
             }
         }
     }
