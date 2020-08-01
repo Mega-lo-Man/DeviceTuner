@@ -6,7 +6,6 @@ using Renci.SshNet;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 
 namespace DeviceTuner.Services
 {
@@ -54,7 +53,7 @@ namespace DeviceTuner.Services
             return true;
         }
 
-        public NetworkDevice Send(NetworkDevice networkDevice, Dictionary<string, string> SettingsDict)
+        public EthernetSwitch Send(EthernetSwitch ethernetDevice, Dictionary<string, string> SettingsDict)
         {
             _sDict = SettingsDict;
 
@@ -62,7 +61,7 @@ namespace DeviceTuner.Services
 
             stream.WriteLine("sh system id");
 
-            GetIDoverSSH(GetDeviceResponse(stream), networkDevice);
+            GetIDoverSSH(GetDeviceResponse(stream), ethernetDevice);
 
             stream.WriteLine("en");
             stream.WriteLine(_sDict["NewAdminPassword"]);
@@ -76,10 +75,10 @@ namespace DeviceTuner.Services
 
             stream.Close();
 
-            return networkDevice;
+            return ethernetDevice;
         }
 
-        private void GetIDoverSSH(string strForParse, NetworkDevice networkDevice)
+        private void GetIDoverSSH(string strForParse, EthernetSwitch ethernetDevice)
         {
             string answer = strForParse;
 
@@ -117,9 +116,11 @@ namespace DeviceTuner.Services
                 LastWordIndex = answer.LastIndexOf(' ') + 1;
                 MACaddress = answer.Substring(LastWordIndex, answer.Length - LastWordIndex);
             }
-            networkDevice.MACaddress = MACaddress;
-            networkDevice.HardwareVersion = HardwareVersion;
-            networkDevice.Serial = SerialNumber;
+            ethernetDevice.MACaddress = MACaddress;
+            ethernetDevice.HardwareVersion = HardwareVersion;
+            ethernetDevice.Serial = SerialNumber;
+            ethernetDevice.Username = _sDict["NewAdminLogin"];
+            ethernetDevice.Password = _sDict["NewAdminPassword"];
         }
 
         // Получение строки ответов на комманды от коммутатора
@@ -137,6 +138,5 @@ namespace DeviceTuner.Services
             }
             return result;
         }
-
     }
 }

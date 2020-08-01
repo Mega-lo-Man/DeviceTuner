@@ -5,12 +5,13 @@ using DeviceTuner.Core;
 using Prism.Events;
 using System;
 using System.Windows.Data;
+using System.Xml.Xsl;
 
 namespace DeviceTuner.Services
 {
     public class DataRepositoryService : IDataRepositoryService
     {
-        private List<NetworkDevice> switchDevs = new List<NetworkDevice>();
+        private List<EthernetSwitch> switchDevs = new List<EthernetSwitch>();
 
         private IEventAggregator _ea;
         private IExcelDataDecoder _excelDataDecoder;
@@ -37,7 +38,7 @@ namespace DeviceTuner.Services
             _excelDataDecoder = excelDataDecoder;
         }
 
-        public List<NetworkDevice> GetSwitchDevices()
+        public List<EthernetSwitch> GetSwitchDevices()
         {
             if (_fullPathToData == "")
             {
@@ -49,12 +50,12 @@ namespace DeviceTuner.Services
             }
         }
 
-        private bool SaveSwitchDevice(NetworkDevice networkDevice)
+        private bool SaveSwitchDevice(EthernetSwitch ethernetSwitch)
         {
             //throw new NotImplementedException();
             if (DataProviderType == 1) // Если источник данных - таблица Excel
             {
-                _excelDataDecoder.SaveDevice(networkDevice);
+                _excelDataDecoder.SaveDevice(ethernetSwitch);
                 return true;
             }
             return false;
@@ -71,8 +72,18 @@ namespace DeviceTuner.Services
         public bool SaveDevice<T>(T arg) where T : SimplestСomponent
         {
             object someDevice = arg;
-            if (typeof(T) == typeof(NetworkDevice)) return SaveSwitchDevice((NetworkDevice)someDevice);
+            if (typeof(T) == typeof(EthernetSwitch)) return SaveSwitchDevice((EthernetSwitch)someDevice);
             return false;
+        }
+
+        public IList<T> GetDevices<T>(Type arg) where T : SimplestСomponent
+        {
+            object someDevsType = arg;
+            if (typeof(T) == typeof(EthernetSwitch))
+            {
+                return (IList<T>)switchDevs;
+            }
+            return null;
         }
     }
 }

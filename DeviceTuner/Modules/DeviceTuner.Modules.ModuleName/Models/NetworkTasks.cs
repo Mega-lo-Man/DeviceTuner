@@ -31,7 +31,7 @@ namespace DeviceTuner.Modules.ModuleSwitch.Models
         private void MessageForUser(string message)
         {
             //Сообщаем об обновлении данных в репозитории
-            _ea.GetEvent<MessageSentEvent>().Publish(Tuple.Create(MessageSentEvent.NeedOfActionUser, message));
+            _ea.GetEvent<MessageSentEvent>().Publish(Tuple.Create(MessageSentEvent.NeedOfUserAction, message));
         }
 
         public bool SendPing(string NewIPAddress)
@@ -62,7 +62,7 @@ namespace DeviceTuner.Modules.ModuleSwitch.Models
             }
         }
 
-        public bool UploadConfigStateMachine(NetworkDevice nDevice, Dictionary<string, string> settings)
+        public bool UploadConfigStateMachine(EthernetSwitch switchDevice, Dictionary<string, string> settings)
         {
             Dictionary<string, string> _sDict = settings;
             int State = 0;
@@ -77,22 +77,30 @@ namespace DeviceTuner.Modules.ModuleSwitch.Models
                         break;
                     case 1:
                         // Пытаемся в цикле подключиться по Telnet (сервер Telnet загружается через некоторое время после успешного пинга)
-                        if (_telnetSender.CreateConnection(_sDict["DefaultIPAddress"], _telnetPort, _sDict["DefaultAdminLogin"], _sDict["DefaultAdminPassword"], null)) State = 2;
+                        if (_telnetSender.CreateConnection(_sDict["DefaultIPAddress"], 
+                                                           _telnetPort, _sDict["DefaultAdminLogin"],
+                                                           _sDict["DefaultAdminPassword"],
+                                                           null))
+                            State = 2;
                         break;
                     case 2:
                         // Заливаем первую часть конфига в коммутатор по Telnet
-                        _telnetSender.Send(nDevice, _sDict);
+                        _telnetSender.Send(switchDevice, _sDict);
                         // Закрываем Telnet соединение
                         _telnetSender.CloseConnection();
                         State = 3;
                         break;
                     case 3:
                         // Пытаемся в цикле подключиться к SSH-серверу
-                        if (_sshSender.CreateConnection(nDevice.AddressIP, _sshPort, _sDict["NewAdminLogin"], _sDict["NewAdminPassword"], @"id_rsa.key")) State = 4;
+                        if (_sshSender.CreateConnection(switchDevice.AddressIP,
+                                                        _sshPort, _sDict["NewAdminLogin"],
+                                                        _sDict["NewAdminPassword"],
+                                                        @"id_rsa.key"))
+                            State = 4;
                         break;
                     case 4:
                         // Заливаем вторую часть конфига по SSH-протоколу
-                        _sshSender.Send(nDevice, _sDict);
+                        _sshSender.Send(switchDevice, _sDict);
                         // Закрываем SSH-соединение
                         _sshSender.CloseConnection();
                         
@@ -101,7 +109,7 @@ namespace DeviceTuner.Modules.ModuleSwitch.Models
                         break;
                     case 5:
                         // Пингуем в цикле коммутатор по новому IP-адресу (как только пинг пропал - коммутатор отключили)
-                        if (!SendPing(nDevice.AddressIP)) State = 6;
+                        if (!SendPing(switchDevice.AddressIP)) State = 6;
                         break;
                     case 6:
                         break;

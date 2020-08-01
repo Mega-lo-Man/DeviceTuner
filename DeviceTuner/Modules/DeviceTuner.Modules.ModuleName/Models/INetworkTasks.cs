@@ -7,7 +7,7 @@ namespace DeviceTuner.Modules.ModuleSwitch.Models
 {
     public interface INetworkTasks
     {
-        public bool UploadConfigStateMachine(NetworkDevice nDevice, Dictionary<string, string> settings);
+        public bool UploadConfigStateMachine(EthernetSwitch nDevice, Dictionary<string, string> settings);
         public bool SendPing(string NewIPAddress);
     }
 }

@@ -18,10 +18,14 @@ namespace DeviceTuner.Services.Interfaces
         string FullPathToData { get; set; }
 
         /// <summary>
-        /// Пулучить список коммутаторов
+        /// Получить список коммутаторов
         /// </summary>
         /// <returns></returns>
-        List<NetworkDevice> GetSwitchDevices();
+        List<EthernetSwitch> GetSwitchDevices();
+
+        //List<>
+
+        //List<Device>
 
         /// <summary>
         /// Установить список устройств

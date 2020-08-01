@@ -13,7 +13,6 @@ using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Threading;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace DeviceTuner.Modules.ModuleName.ViewModels
 {
@@ -97,8 +96,8 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             set { SetProperty(ref _sliderIsChecked, value); }
         }
 
-        private ObservableCollection<NetworkDevice> _switchList;
-        public ObservableCollection<NetworkDevice> SwitchList //Список коммутаторов
+        private ObservableCollection<EthernetSwitch> _switchList;
+        public ObservableCollection<EthernetSwitch> SwitchList //Список коммутаторов
         {
             get { return _switchList; }
             set { SetProperty(ref _switchList, value); } 
@@ -124,7 +123,7 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
                         
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
 
-            SwitchList = new ObservableCollection<NetworkDevice>();
+            SwitchList = new ObservableCollection<EthernetSwitch>();
 
             CheckedCommand = new DelegateCommand(async () => await StartCommandExecuteAsync(), StartCommandCanExecute);
             UncheckedCommand = new DelegateCommand(StopCommandExecute, StopCommandCanExecute);
@@ -166,15 +165,15 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
         // Основной цикл - заливка в каждый коммутатор настроек из списка SwitchList
         private void DownloadLoop()
         {
-            foreach (NetworkDevice networkDevice in SwitchList)
+            foreach (EthernetSwitch ethernetSwitch in SwitchList)
             {
-                if (networkDevice.Serial == null)//исключаем коммутаторы уже имеющие серийник (они уже были сконфигурированны)
+                if (ethernetSwitch.Serial == null)//исключаем коммутаторы уже имеющие серийник (они уже были сконфигурированны)
                 {
-                    CurrentItemTextBox = networkDevice.AddressIP;// Вывод адреса коммутатора в UI
+                    CurrentItemTextBox = ethernetSwitch.AddressIP;// Вывод адреса коммутатора в UI
 
-                    if (!_networkTasks.UploadConfigStateMachine(networkDevice, GetSettingsDict()))
+                    if (!_networkTasks.UploadConfigStateMachine(ethernetSwitch, GetSettingsDict()))
                         throw new Exception("Something went wrong in upload config procedure");
-                    else _dataRepositoryService.SaveDevice(networkDevice);
+                    else _dataRepositoryService.SaveDevice(ethernetSwitch);
                     // Обновляем всю коллекцию d UI целиком
                     _dispatcher.BeginInvoke(new Action(() =>
                         {
@@ -203,12 +202,12 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             if (message.Item1 == MessageSentEvent.RepositoryUpdated)
             {
                 SwitchList.Clear();
-                foreach (NetworkDevice item in _dataRepositoryService.GetSwitchDevices())
+                foreach (EthernetSwitch item in _dataRepositoryService.GetSwitchDevices())
                 {
-                        SwitchList.Add(item);
+                    SwitchList.Add(item);
                 }
             }
-            if(message.Item1 == MessageSentEvent.NeedOfActionUser)
+            if(message.Item1 == MessageSentEvent.NeedOfUserAction)
             {
                 MessageForUser = message.Item2;// Обновим информацию для пользователя 
             }

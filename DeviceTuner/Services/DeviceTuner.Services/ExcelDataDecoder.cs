@@ -46,10 +46,10 @@ namespace DeviceTuner.Services
             return devType;
         }
 
-        public List<NetworkDevice> GetSwitchDevices(string excelFileFullPath)
+        public List<EthernetSwitch> GetSwitchDevices(string excelFileFullPath)
         {
             sourceFile = new FileInfo(excelFileFullPath);
-            List<NetworkDevice> devices = new List<NetworkDevice>();
+            List<EthernetSwitch> devices = new List<EthernetSwitch>();
 
             package = new ExcelPackage(sourceFile);
 
@@ -81,7 +81,7 @@ namespace DeviceTuner.Services
                         switch (GetDeviceType(devModel))
                         {
                             case 1:
-                                devices.Add(new NetworkDevice
+                                devices.Add(new EthernetSwitch
                                 {
                                     Designation = devName,
                                     AddressIP = parseAddress.ToString(),
@@ -114,18 +114,18 @@ namespace DeviceTuner.Services
         public bool SaveDevice<T>(T arg) where T : SimplestСomponent
         {
             object someDevice = arg;
-            if (typeof(T) == typeof(NetworkDevice)) return SaveNetworkDevice((NetworkDevice)someDevice);
+            if (typeof(T) == typeof(EthernetSwitch)) return SaveNetworkDevice((EthernetSwitch)someDevice);
             return false;
         }
 
-        private bool SaveNetworkDevice(NetworkDevice networkDevice)
+        private bool SaveNetworkDevice(EthernetSwitch ethernetSwitch)
         {
             //поиск в таблице строки которая содержит IP-адрес такой же как в networkDevice
-            int? foundRow = SearchRowByCellValue(networkDevice.AddressIP, addressCol); 
+            int? foundRow = SearchRowByCellValue(ethernetSwitch.AddressIP, addressCol); 
             if (foundRow != null)
             {
                 // записываем серийник коммутатора в графу "Серийный номер" напротив IP-адреса этого коммутатора
-                worksheet.Cells[foundRow.Value, serialCol].Value = networkDevice.Serial;
+                worksheet.Cells[foundRow.Value, serialCol].Value = ethernetSwitch.Serial;
                 package.Save();
                 return true;
             }

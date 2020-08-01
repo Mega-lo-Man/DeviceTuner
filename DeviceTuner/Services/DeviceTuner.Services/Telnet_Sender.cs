@@ -15,8 +15,8 @@ namespace DeviceTuner.Services
         private TelnetConnection _tc;
         private EventAggregator _ea;
         private Dictionary<string, string> _sDict;
-        private NetworkDevice _networkDevice;
-        private int defaultTelnetPort = 23;
+        private EthernetSwitch _ethernetDevice;
+        
 
         public Telnet_Sender(EventAggregator ea, TelnetConnection tc)
         {
@@ -50,15 +50,15 @@ namespace DeviceTuner.Services
             
         }
 
-        public NetworkDevice Send(NetworkDevice networkDevice, Dictionary<string, string> SettingsDict)
+        public EthernetSwitch Send(EthernetSwitch ethernetDevice, Dictionary<string, string> SettingsDict)
         {
             _sDict = SettingsDict;
-            _networkDevice = networkDevice;
+            _ethernetDevice = ethernetDevice;
             
             PacketSendToTelnet(); // Передаём настройки по Telnet-протоколу
             _tc.ConnectionClose(); // Закрываем Telnet-соединение
-
-            return networkDevice; // Возвращаем объект с заполненными свойствами полученными из коммутатора
+            
+            return ethernetDevice; // Возвращаем объект с заполненными свойствами полученными из коммутатора
         }
 
         private bool PacketSendToTelnet()
@@ -67,7 +67,7 @@ namespace DeviceTuner.Services
             MessageSentEvent ev = _ea.GetEvent<MessageSentEvent>();
             
             ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("conf t")));
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("hostname " + _networkDevice.Designation)));
+            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("hostname " + _ethernetDevice.Designation)));
             ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("aaa authentication login default line")));
             ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("aaa authentication enable default line")));
 
@@ -88,7 +88,7 @@ namespace DeviceTuner.Services
 
             ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("interface vlan 1")));
 
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("ip address " + _networkDevice.AddressIP + " /" + _sDict["IPmask"])));
+            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("ip address " + _ethernetDevice.AddressIP + " /" + _sDict["IPmask"])));
             return true;
         }
     }

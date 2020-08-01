@@ -7,7 +7,7 @@ namespace DeviceTuner.Services.Interfaces
 {
     public interface IExcelDataDecoder
     {
-        List<NetworkDevice> GetSwitchDevices(string excelFileFullPath);
+        List<EthernetSwitch> GetSwitchDevices(string excelFileFullPath);
         bool SaveDevice<T>(T arg) where T : SimplestСomponent;
     }
 }

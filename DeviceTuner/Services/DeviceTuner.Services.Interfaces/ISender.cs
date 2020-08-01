@@ -7,13 +7,14 @@ namespace DeviceTuner.Services.Interfaces
 {
     public interface ISender
     {
-        
         /// <summary>
         /// Заливка конфига в коммутатор по протоколу Telnet или SSH
         /// </summary>
-        /// <param name="networkDevice"></param>
-        /// <returns>Объект типа NetworkDevices с заполненными полями (которые удалось выцепить из коммутатора)</returns>
-        public NetworkDevice Send(NetworkDevice networkDevice, Dictionary<string, string> SettingsDict);
+        /// <param name="ethernetDevice">Коммутатор</param>
+        /// <param name="SettingsDict">Словарь с настройками коммутатора</param>
+        /// <returns>Объект типа EthernetDevices с заполненными полями (которые удалось выцепить из коммутатора)</returns>
+        public EthernetSwitch Send(EthernetSwitch ethernetDevice, Dictionary<string, string> SettingsDict);
+
         /// <summary>
         /// Создание нового сетевого соединения
         /// </summary>
@@ -24,6 +25,7 @@ namespace DeviceTuner.Services.Interfaces
         /// <param name="KeyFile">Путь к файлу ключа шифрования</param>
         /// <returns>True - соединение успешно создано, False - в противном случае</returns>
         public bool CreateConnection(string IPaddress, ushort Port, string Username, string Password, string KeyFile);
+
         /// <summary>
         /// Завершение сетевого подключения
         /// </summary>

@@ -17,6 +17,7 @@ namespace DeviceTuner.SharedDataModel
             get { return _model; }
             set { _model = value; }
         }
+
         /// <summary>
         /// Тип прибора ("Блок сигнально-пусковой")
         /// </summary>
@@ -26,6 +27,7 @@ namespace DeviceTuner.SharedDataModel
             get { return _type; }
             set { _type = value; }
         }
+
         /// <summary>
         /// Обозначение компонента на схеме ("SR1.3")
         /// </summary>
@@ -35,6 +37,7 @@ namespace DeviceTuner.SharedDataModel
             get { return _designation; }
             set { _designation = value; }
         }
+
         public override bool Equals(Object obj)
         {
             if (obj == null)

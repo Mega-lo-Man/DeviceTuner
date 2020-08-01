@@ -9,6 +9,6 @@ namespace DeviceTuner.Core
     {
         public static readonly int RepositoryUpdated = 1;
         public static readonly int StringToConsole = 2;
-        public static readonly int NeedOfActionUser = 3;
+        public static readonly int NeedOfUserAction = 3;
     }
 }
