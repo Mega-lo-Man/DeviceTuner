@@ -4,13 +4,136 @@
              xmlns:local="clr-namespace:DeviceTuner.Modules.ModuleRS485.Views"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:VM ="clr-namespace:DeviceTuner.Modules.ModuleRS485.ViewModels"
+             xmlns:debug ="clr-namespace:DeviceTuner.Modules.ModuleRS485.ViewModels"
+             xmlns:VMSDM ="clr-namespace:DeviceTuner.SharedDataModel;assembly=DeviceTuner.SharedDataModel"
+             
+             xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True" >
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/DeviceTuner.core;component/Resources/DictionaryStyles.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/DeviceTuner.core;component/Resources/DictionaryImages.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <debug:DebugConverter x:Key="DebugConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid>
-        <TextBlock Text="{Binding Message}"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Orientation="Vertical" >
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="Default IP address:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TextBox Name="DefaultIPText" Text="{Binding DefaultIP}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+
+            </Grid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="IP Mask:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TextBox Name="IPMask" Text="{Binding IPMask}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            </Grid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="Default RS-485 address:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TextBox Name="DefaultRS485Address" Text="{Binding DefaultRS485Address}" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            </Grid>
+        </StackPanel>
+        
+        <StackPanel Grid.Row="0" Grid.Column="2">
+            <RadioButton Content="По шкафам" GroupName="WorkType" IsChecked="True" />
+            <RadioButton Content="По площадкам" GroupName="WorkType"/>
+            <RadioButton Content="Проверка RS-485" GroupName="WorkType"/>
+        </StackPanel>
+        <TreeView ItemsSource="{Binding Path=CabinetList, Converter={StaticResource DebugConverter}}" Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Margin="5" >
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="{x:Type TreeViewItem}">
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                    <Setter Property="FontWeight" Value="Normal" />
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="FontWeight" Value="Bold" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </TreeView.ItemContainerStyle>
+            <TreeView.Resources>
+                <HierarchicalDataTemplate 
+                    DataType="{x:Type VMSDM:Cabinet}"
+                    ItemsSource="{Binding NetDevicesList}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{StaticResource CabinetImage}"/>
+                        <TextBlock Text="{Binding Designation, Converter={StaticResource DebugConverter}}" />
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+                <HierarchicalDataTemplate 
+                    DataType="{x:Type VMSDM:NetworkDevice}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Designation, Converter={StaticResource DebugConverter}}" />
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+            </TreeView.Resources>
+        </TreeView>
+
+
+        <!--
+        <ListBox x:Name="DeviceListBox" ItemsSource="{Binding Path=DeviceList}" SelectedItem="{Binding Path=SelectedDevice}" Grid.Row="1" Grid.Column="1" Margin="5" Grid.RowSpan="3">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Margin="2" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Stretch">
+                            <TextBlock Text="{Binding Designation}" />
+                            <TextBlock Text="{Binding AddressRS485}" />
+                            <TextBlock Text="{Binding Serial}" />
+                        </StackPanel>
+                        <Image Margin="3" Grid.Column="1" Grid.Row="0" Source="{Binding Serial, Converter={StaticResource ItemColorConverter}}"/>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        -->
     </Grid>
+    
+    
 </UserControl>

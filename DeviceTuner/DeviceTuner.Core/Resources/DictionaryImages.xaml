@@ -4,4 +4,5 @@
     <!--Перед добавлением картинок в ресурсы выполнить: в Solution Explorer ПКМ по картинке -> Properties -> Build Action -> Resource -->
     <BitmapImage x:Key="OkImage" UriSource="pack://application:,,,/DeviceTuner.Core;component/Resources/Images/ok.png"/>
     <BitmapImage x:Key="CancelImage" UriSource="pack://application:,,,/DeviceTuner.Core;component/Resources/Images/cancel.png"/>
+    <BitmapImage x:Key="CabinetImage" UriSource="pack://application:,,,/DeviceTuner.Core;component/Resources/Images/cabinet_flash_16x16.png"/>
 </ResourceDictionary>

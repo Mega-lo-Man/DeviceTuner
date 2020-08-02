@@ -18,11 +18,13 @@ namespace DeviceTuner.Modules.ModuleRS485
         public void OnInitialized(IContainerProvider containerProvider)
         {
             _regionManager.RequestNavigate(RegionNames.ContentRegion, "ViewRS485");
+            
         }
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterForNavigation<ViewRS485>();
+            
         }
     }
 }
