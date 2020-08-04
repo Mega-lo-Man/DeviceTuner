@@ -21,11 +21,11 @@ namespace DeviceTuner.SharedDataModel
         /// <summary>
         /// Тип прибора ("Блок сигнально-пусковой")
         /// </summary>
-        private string _type;
-        public string Type
+        private string _deviceType;
+        public string DeviceType
         {
-            get { return _type; }
-            set { _type = value; }
+            get { return _deviceType; }
+            set { _deviceType = value; }
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace DeviceTuner.SharedDataModel
                 return false;
             if (string.Compare(this.Designation, obj.Designation, StringComparison.CurrentCulture) == 0 &&
                 string.Compare(this.Model, obj.Model, StringComparison.CurrentCulture) == 0 &&
-                string.Compare(this.Type, obj.Type, StringComparison.CurrentCulture) == 0)
+                string.Compare(this.DeviceType, obj.DeviceType, StringComparison.CurrentCulture) == 0)
                 return true;
             else
                 return false;

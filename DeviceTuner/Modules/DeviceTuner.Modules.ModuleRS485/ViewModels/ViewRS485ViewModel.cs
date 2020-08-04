@@ -100,14 +100,24 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
 
             
             Cabinet cab = new Cabinet();
-            cab.Designation = "Designation_1";
+            cab.Designation = "Шкапчик_1";
+            
             NetworkDevice networkDevice = new NetworkDevice();
             networkDevice.Designation = "Прибор 1";
             cab.AddItem(networkDevice);
+
+            Device device = new Device();
+            device.Designation = "Dev 1";
+            cab.AddItem(device);
+
+            Device device2 = new Device();
+            device2.Designation = "Dev 2";
+            cab.AddItem(device2);
+
             CabinetList.Add(cab);
 
             Cabinet cab1 = new Cabinet();
-            cab1.Designation = "Designation_2";
+            cab1.Designation = "Шкапчик_2";
             NetworkDevice networkDevice1 = new NetworkDevice();
             networkDevice1.Designation = "Прибор 2";
             cab1.AddItem(networkDevice1);

@@ -1,47 +1,44 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Collections.ObjectModel;
+using System.Transactions;
 
 namespace DeviceTuner.SharedDataModel
 {
     public class Cabinet : SimplestСomponent
     {
-        private List<EthernetSwitch> _ethernetDevices = new List<EthernetSwitch>();
-        private List<NetworkDevice> _networkDevices = new List<NetworkDevice>();
-        private List<Device> _devices = new List<Device>();
-        private List<SimplestСomponent> _simplestComponent = new List<SimplestСomponent>();
+        private List<object> objLst = new List<object>(); // крнтейнер для хранения всех дивайсов внутри шкафа
 
-        private string _directoryPath;
-        public string FilePath
+        //public string FilePath { get; set; }
+
+        public IList<object> GetAllDevicesList
         {
-            get { return _directoryPath; }
-            set { _directoryPath = value; }
-        }
+            get 
+            {
+                ObservableCollection<object> childNodes = new ObservableCollection<object>();
 
-        public List<NetworkDevice> NetDevicesList
-        {
-            get { return _networkDevices; }
-        }
+                foreach (var item in objLst)
+                    childNodes.Add(item);
 
+                return childNodes;
+            }
+        }
+      
         #region common
         public IList GetItemsList<T>() where T : SimplestСomponent
         {
-            if (typeof(T) == typeof(EthernetSwitch)) return _ethernetDevices;
-            if (typeof(T) == typeof(NetworkDevice)) return _networkDevices;
-            if (typeof(T) == typeof(Device)) return _devices;
-            if (typeof(T) == typeof(SimplestСomponent)) return _simplestComponent;
-            return null;
+            List<T> lst = new List<T>();
+            foreach(var item in objLst)
+            {
+                if(item is T) { lst.Add((T)item); }
+            }
+            return lst;
         }
+
         public void AddItem<T>(T arg) where T : SimplestСomponent
         {
-            object temp = arg;
-            if (typeof(T) == typeof(EthernetSwitch)) { _networkDevices.Add((EthernetSwitch)temp); }
-            if (typeof(T) == typeof(NetworkDevice)) { _networkDevices.Add((NetworkDevice)temp); }
-            if (typeof(T) == typeof(Device)) { _devices.Add((Device)temp); }
-            if (typeof(T) == typeof(SimplestСomponent)) { _simplestComponent.Add((SimplestСomponent)temp); }
+            objLst.Add(arg);
         }
         #endregion
     }

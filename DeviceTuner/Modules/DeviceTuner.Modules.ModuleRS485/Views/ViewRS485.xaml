@@ -7,7 +7,6 @@
              xmlns:VM ="clr-namespace:DeviceTuner.Modules.ModuleRS485.ViewModels"
              xmlns:debug ="clr-namespace:DeviceTuner.Modules.ModuleRS485.ViewModels"
              xmlns:VMSDM ="clr-namespace:DeviceTuner.SharedDataModel;assembly=DeviceTuner.SharedDataModel"
-             
              xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
@@ -94,18 +93,19 @@
             <TreeView.Resources>
                 <HierarchicalDataTemplate 
                     DataType="{x:Type VMSDM:Cabinet}"
-                    ItemsSource="{Binding NetDevicesList}">
+                    ItemsSource="{Binding GetAllDevicesList}">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="{StaticResource CabinetImage}"/>
-                        <TextBlock Text="{Binding Designation, Converter={StaticResource DebugConverter}}" />
+                        <TextBlock Text="{Binding Designation}" />
                     </StackPanel>
                 </HierarchicalDataTemplate>
-                <HierarchicalDataTemplate 
-                    DataType="{x:Type VMSDM:NetworkDevice}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Designation, Converter={StaticResource DebugConverter}}" />
-                    </StackPanel>
-                </HierarchicalDataTemplate>
+                <DataTemplate DataType="{x:Type VMSDM:Device}">
+                    <TextBlock Text="{Binding Designation}"/>
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type VMSDM:NetworkDevice}">
+                    <TextBlock Text="{Binding Designation, Converter={StaticResource DebugConverter}}" />
+                </DataTemplate>
+                
             </TreeView.Resources>
         </TreeView>
 
