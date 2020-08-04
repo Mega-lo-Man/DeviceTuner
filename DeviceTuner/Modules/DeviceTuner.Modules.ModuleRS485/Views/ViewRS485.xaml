@@ -77,7 +77,7 @@
             <RadioButton Content="По площадкам" GroupName="WorkType"/>
             <RadioButton Content="Проверка RS-485" GroupName="WorkType"/>
         </StackPanel>
-        <TreeView ItemsSource="{Binding Path=CabinetList, Converter={StaticResource DebugConverter}}" Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Margin="5" >
+        <TreeView ItemsSource="{Binding Path=CabinetList}" Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Margin="5" >
             <TreeView.ItemContainerStyle>
                 <Style TargetType="{x:Type TreeViewItem}">
                     <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
@@ -103,7 +103,7 @@
                     <TextBlock Text="{Binding Designation}"/>
                 </DataTemplate>
                 <DataTemplate DataType="{x:Type VMSDM:NetworkDevice}">
-                    <TextBlock Text="{Binding Designation, Converter={StaticResource DebugConverter}}" />
+                    <TextBlock Text="{Binding Designation}" /><!--, Converter={StaticResource DebugConverter} -->
                 </DataTemplate>
                 
             </TreeView.Resources>
