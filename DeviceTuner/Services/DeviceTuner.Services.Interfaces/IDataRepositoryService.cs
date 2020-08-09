@@ -8,22 +8,22 @@ namespace DeviceTuner.Services.Interfaces
     public interface IDataRepositoryService
     {
         /// <summary>
-        /// Установить список устройств (найти в источнике данных все устройства)
+        /// Установить список приборов (найти в источнике данных все приборы)
         /// </summary>
         void SetDevices(int DataProviderType, string FullPathToData);
 
         /// <summary>
-        /// Получить список устройств для настройки
+        /// Получить список приборов для настройки
         /// </summary>
-        /// <typeparam name="T">тип устройства унаследованный от SimplestComponent</typeparam>
-        /// <returns>Список устройств типа Т</returns>
+        /// <typeparam name="T">тип прибора унаследованный от SimplestComponent</typeparam>
+        /// <returns>Список шкафов с приборами типа Т</returns>
         IList<Cabinet> GetDevices<T>() where T : SimplestСomponent;
 
         /// <summary>
-        /// Записать свойства дивайса в таблицу Excel или базу данных
+        /// Записать свойства прибора в таблицу Excel или базу данных
         /// </summary>
-        /// <typeparam name="T">тип устройства унаследованный от SimplestComponent</typeparam>
-        /// <param name="device">экземпляр устройства</param>
+        /// <typeparam name="T">тип прибора унаследованный от SimplestComponent</typeparam>
+        /// <param name="device">экземпляр прибора</param>
         /// <returns>true - есди запись удалась, false - в противном случае</returns>
         bool SaveDevice<T>(T device) where T : SimplestСomponent;
     }
