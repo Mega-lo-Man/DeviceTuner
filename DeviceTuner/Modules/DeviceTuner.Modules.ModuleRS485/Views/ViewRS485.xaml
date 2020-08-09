@@ -102,15 +102,16 @@
                 <DataTemplate DataType="{x:Type VMSDM:Device}">
                     <TextBlock Text="{Binding Designation}"/>
                 </DataTemplate>
-                <DataTemplate DataType="{x:Type VMSDM:NetworkDevice}">
-                    <TextBlock Text="{Binding Designation}" /><!--, Converter={StaticResource DebugConverter} -->
+                <DataTemplate DataType="{x:Type VMSDM:RS485device}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{StaticResource DevNetworkImage}"/>
+                        <TextBlock Text="{Binding Designation}" />
+                        <!--, Converter={StaticResource DebugConverter} -->
+                    </StackPanel>
                 </DataTemplate>
-                
             </TreeView.Resources>
         </TreeView>
 
-
-        <!--
         <ListBox x:Name="DeviceListBox" ItemsSource="{Binding Path=DeviceList}" SelectedItem="{Binding Path=SelectedDevice}" Grid.Row="1" Grid.Column="1" Margin="5" Grid.RowSpan="3">
             <ListBox.ItemTemplate>
                 <DataTemplate>
@@ -132,7 +133,7 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        -->
+        
     </Grid>
     
     

@@ -17,7 +17,7 @@ namespace DeviceTuner.Services.Interfaces
         /// </summary>
         /// <typeparam name="T">тип устройства унаследованный от SimplestComponent</typeparam>
         /// <returns>Список устройств типа Т</returns>
-        IList<T> GetDevices<T>() where T : SimplestСomponent;
+        IList<Cabinet> GetDevices<T>() where T : SimplestСomponent;
 
         /// <summary>
         /// Записать свойства дивайса в таблицу Excel или базу данных

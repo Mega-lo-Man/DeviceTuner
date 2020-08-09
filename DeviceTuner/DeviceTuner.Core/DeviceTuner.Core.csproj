@@ -8,6 +8,7 @@
     <None Remove="Resources\Images\alert.png" />
     <None Remove="Resources\Images\cabinet_flash_16x16.png" />
     <None Remove="Resources\Images\cancel.png" />
+    <None Remove="Resources\Images\Default-Icon-icon.png" />
     <None Remove="Resources\Images\ok.png" />
   </ItemGroup>
   <ItemGroup>
@@ -17,6 +18,7 @@
     <Resource Include="Resources\Images\alert.png" />
     <Resource Include="Resources\Images\cabinet_flash_16x16.png" />
     <Resource Include="Resources\Images\cancel.png" />
+    <Resource Include="Resources\Images\Default-Icon-icon.png" />
     <Resource Include="Resources\Images\ok.png" />
   </ItemGroup>
   <ItemGroup>

@@ -1,7 +1,9 @@
-﻿using DeviceTuner.Core.Mvvm;
+﻿using DeviceTuner.Core;
+using DeviceTuner.Core.Mvvm;
 using DeviceTuner.Services.Interfaces;
 using DeviceTuner.SharedDataModel;
 using Prism.Commands;
+using Prism.Events;
 using Prism.Mvvm;
 using Prism.Regions;
 using System;
@@ -36,7 +38,7 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
             set { SetProperty(ref _ipMask, value); }
         }
 
-        private string _defaultRS485Address="123";
+        private string _defaultRS485Address="127";
         public string DefaultRS485Address
         {
             get { return _defaultRS485Address; }
@@ -74,6 +76,9 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
         #region IsSelected
 
         private bool _isSelected;
+        private IEventAggregator _ea;
+        private IDataRepositoryService _dataRepositoryService;
+
         /// <summary>
         /// Gets/sets whether the TreeViewItem 
         /// associated with this object is selected.
@@ -92,36 +97,30 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
 
         #endregion // IsSelected
 
-        public ViewRS485ViewModel(IRegionManager regionManager, IMessageService messageService, IDataRepositoryService dataRepositoryService) :
-            base(regionManager)
+        public ViewRS485ViewModel(IRegionManager regionManager,
+                                  IMessageService messageService,
+                                  IDataRepositoryService dataRepositoryService,
+                                  IEventAggregator ea) : base(regionManager)
         {
+            _ea = ea;
+            _dataRepositoryService = dataRepositoryService;
+
+            _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
+
             Title = "RS485";
             Message = "View RS485 from your Prism Module";
+        }
 
-            
-            Cabinet cab = new Cabinet();
-            cab.Designation = "Шкапчик_1";
-            
-            NetworkDevice networkDevice = new NetworkDevice();
-            networkDevice.Designation = "Прибор 1";
-            cab.AddItem(networkDevice);
-
-            Device device = new Device();
-            device.Designation = "Dev 1";
-            cab.AddItem(device);
-
-            Device device2 = new Device();
-            device2.Designation = "Dev 2";
-            cab.AddItem(device2);
-
-            CabinetList.Add(cab);
-
-            Cabinet cab1 = new Cabinet();
-            cab1.Designation = "Шкапчик_2";
-            NetworkDevice networkDevice1 = new NetworkDevice();
-            networkDevice1.Designation = "Прибор 2";
-            cab1.AddItem(networkDevice1);
-            CabinetList.Add(cab1);
+        private void MessageReceived(Tuple<int, string> message)
+        {
+            if (message.Item1 == MessageSentEvent.RepositoryUpdated)
+            {
+                CabinetList.Clear();
+                foreach (Cabinet item in _dataRepositoryService.GetDevices<RS485device>())
+                {
+                    CabinetList.Add(item);
+                }
+            }
         }
     }
 }

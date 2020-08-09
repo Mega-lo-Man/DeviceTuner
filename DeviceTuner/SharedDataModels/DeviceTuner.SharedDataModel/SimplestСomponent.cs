@@ -38,6 +38,16 @@ namespace DeviceTuner.SharedDataModel
             set { _designation = value; }
         }
 
+        /// <summary>
+        /// Обозначение шкафа в котором находится этот дивайс
+        /// </summary>
+        private string _cabinetDesignation;
+        public string ParentCabinetDesignation
+        {
+            get { return _cabinetDesignation; }
+            set { _cabinetDesignation = value; }
+        }
+
         public override bool Equals(Object obj)
         {
             if (obj == null)

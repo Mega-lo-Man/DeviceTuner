@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DeviceTuner.SharedDataModel
 {
-    public class EthernetSwitch : NetworkDevice
+    public class EthernetSwitch : RS232device
     {
         /// <summary>
         /// LogIn user name

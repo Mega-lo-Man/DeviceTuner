@@ -10,11 +10,9 @@ namespace DeviceTuner.SharedDataModel
     {
         private List<object> objLst = new List<object>(); // крнтейнер для хранения всех дивайсов внутри шкафа
 
-        //public string FilePath { get; set; }
-
         public IList<object> GetAllDevicesList
         {
-            get 
+            get
             {
                 ObservableCollection<object> childNodes = new ObservableCollection<object>();
 
@@ -24,14 +22,17 @@ namespace DeviceTuner.SharedDataModel
                 return childNodes;
             }
         }
-      
+
         #region common
-        public IList GetItemsList<T>() where T : SimplestСomponent
+        public IList<T> GetDevicesList<T>() where T : SimplestСomponent
         {
             List<T> lst = new List<T>();
-            foreach(var item in objLst)
+            foreach (var item in objLst)
             {
-                if(item is T) { lst.Add((T)item); }
+                if (item.GetType() == typeof(T))
+                { 
+                    lst.Add((T)item); 
+                }
             }
             return lst;
         }
@@ -39,6 +40,11 @@ namespace DeviceTuner.SharedDataModel
         public void AddItem<T>(T arg) where T : SimplestСomponent
         {
             objLst.Add(arg);
+        }
+
+        public void ClearItems()
+        {
+            objLst.Clear();
         }
         #endregion
     }

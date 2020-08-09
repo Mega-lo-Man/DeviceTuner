@@ -202,14 +202,14 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             if (message.Item1 == MessageSentEvent.RepositoryUpdated)
             {
                 SwitchList.Clear();
-                foreach (EthernetSwitch item in _dataRepositoryService.GetDevices<EthernetSwitch>())
+                List<Cabinet> cabinets = (List<Cabinet>)_dataRepositoryService.GetDevices<EthernetSwitch>();
+                foreach (Cabinet cabinet in cabinets)
                 {
-                    SwitchList.Add(item);
+                    foreach (EthernetSwitch item in cabinet.GetDevicesList<EthernetSwitch>()) // масло масляное, в шкафах cabinets не может быть приборов отличных от EthernetSwitch
+                    {
+                        SwitchList.Add(item);
+                    }
                 }
-                /*foreach (EthernetSwitch item in _dataRepositoryService.GetSwitchDevices())
-                {
-                    SwitchList.Add(item);
-                }*/
             }
             if(message.Item1 == MessageSentEvent.NeedOfUserAction)
             {

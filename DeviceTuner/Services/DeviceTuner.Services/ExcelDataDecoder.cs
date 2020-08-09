@@ -6,21 +6,28 @@ using System.Text;
 using OfficeOpenXml;
 using System.IO;
 using System.Net;
+using System.CodeDom;
 
 namespace DeviceTuner.Services
 {
     public class ExcelDataDecoder : IExcelDataDecoder
     {
-        private int addressCol = 0; // Index of column that containing device addresses
+        private int IPaddressCol = 0; // Index of column that containing device addresses
+        private int RS485addressCol = 0; // Index of column that containing device addresses
+        private int RS232addressCol = 0; // Index of column that containing device addresses
         private int nameCol = 0;    // Index of column that containing device names
         private int serialCol = 0;  // Index of column that containing device serial number
         private int modelCol = 0;   // Index of column that containing device model
+        private int parentCol = 0;   // Index of column that containing parent cabinet
         private int CaptionRow = 1; //Table caption row index
 
-        private string ColAddressCaption = "IP"; //Заголовок столбца с адресами
+        private string ColIPAddressCaption = "IP"; //Заголовок столбца с IP-адресами
+        private string ColRS485AddressCaption = "RS485"; //Заголовок столбца с адресами RS485
+        private string ColRS232AddressCaption = "RS232"; //Заголовок столбца с адресами RS232
         private string ColNamesCaption = "Обозначение"; //Заголовок столбца с обозначениями приборов
         private string ColSerialCaption = "Серийный номер"; //Заголовок столбца с обозначениями приборов
-        private string ColModelCaption = "Модель"; //Заголовок столбца с наименование модели прибора
+        private string ColModelCaption = "Модель"; //Заголовок столбца с наименованием модели прибора
+        private string ColParentCaption = "Шкаф"; //Заголовок столбца с наименованием шкафа в котором находится дивайс
 
         private ExcelPackage package;
         private FileInfo sourceFile;
@@ -36,21 +43,97 @@ namespace DeviceTuner.Services
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
         }
 
-        private int GetDeviceType(string DevName)
+        private int GetDeviceType(string DevModel)
         {
             int devType = 0;
-            if (DevName.Contains("MES3508")) devType = 1;
-            if (DevName.Contains("MES2308")) devType = 1;
-            if (DevName.Contains("MES2324")) devType = 1;
-            if (DevName.Contains("2000-Ethernet")) devType = 2;
+            if (DevModel.Contains("MES3508")) 
+                devType = 1;
+            if (DevModel.Contains("MES2308"))
+                devType = 1;
+            if (DevModel.Contains("MES2324"))
+                devType = 1;
+            if (DevModel.Contains("2000-Ethernet"))
+                devType = 2;
             return devType;
         }
 
-        public List<EthernetSwitch> GetSwitchDevices(string excelFileFullPath)
+        public List<Cabinet> GetCabinetsFromExcel(string excelFileFullPath)
         {
-            sourceFile = new FileInfo(excelFileFullPath);
-            List<EthernetSwitch> devices = new List<EthernetSwitch>();
+            ExcelInit(excelFileFullPath);
 
+            //Определяем в каких столбцах находятся обозначения приборов и их адреса
+            FindColumnIndexesByHeader();
+
+            return GetCabinetContent();
+        }
+
+        private List<Cabinet> GetCabinetContent()
+        {
+            List<Cabinet> cabinetsLst = new List<Cabinet>();
+            Cabinet cabinet = new Cabinet();
+            string lastDevParent = ""; //= worksheet.Cells[CaptionRow + 1, parentCol].Value?.ToString();;
+            for (int rowIndex = CaptionRow + 1; rowIndex <= rows; rowIndex++)
+            {
+                string devParent = worksheet.Cells[rowIndex, parentCol].Value?.ToString();
+                string devName = worksheet.Cells[rowIndex, nameCol].Value?.ToString();
+                string devModel = worksheet.Cells[rowIndex, modelCol].Value?.ToString();
+                string devIPAddr = worksheet.Cells[rowIndex, IPaddressCol].Value?.ToString();
+                string devSerial = worksheet.Cells[rowIndex, serialCol].Value?.ToString();
+
+                int.TryParse(worksheet.Cells[rowIndex, RS232addressCol].Value?.ToString(), out int devRS232Addr);
+                int.TryParse(worksheet.Cells[rowIndex, RS485addressCol].Value?.ToString(), out int devRS485Addr);
+
+                if (!string.Equals(devParent, lastDevParent)) // Если новый шкаф - сохранить старый в список шкафов
+                {
+                    if(!(rowIndex == CaptionRow + 1)) cabinetsLst.Add(cabinet); // первый шкаф надо сначала наполнить а потом добавлять в cabinetsLst
+                    cabinet = new Cabinet
+                    {
+                        Designation = devParent
+                    };
+                }
+                
+                switch(GetDeviceType(devModel))
+                {
+                    case 0:
+                        cabinet.AddItem<RS485device>(new RS485device
+                        {
+                            Designation = devName,
+                            Model = devModel,
+                            Serial = devSerial,
+                            AddressRS485 = devRS485Addr
+                        });
+                        break;
+                    case 1:
+                        cabinet.AddItem<EthernetSwitch>(new EthernetSwitch
+                        {
+                            Designation = devName,
+                            Model = devModel,
+                            Serial = devSerial,
+                            AddressIP = devIPAddr
+                        });
+                        break;
+                    case 2:
+                        cabinet.AddItem<RS232device>(new RS232device
+                        {
+                            Designation = devName,
+                            Model = devModel,
+                            Serial = devSerial,
+                            AddressRS485 = devRS232Addr
+                        });
+                        break;
+                }
+                if(rowIndex == rows) // В последней строчке таблицы надо добавить последний шкаф в список шкафов, иначе (исходя из условия) он туда не попадёт
+                {
+                    cabinetsLst.Add(cabinet);
+                }
+                lastDevParent = devParent;
+            }
+            return cabinetsLst;
+        }
+
+        private void ExcelInit(string filepath)
+        {
+            sourceFile = new FileInfo(filepath);
             package = new ExcelPackage(sourceFile);
 
             worksheet = package.Workbook.Worksheets["Адреса"];
@@ -62,41 +145,6 @@ namespace DeviceTuner.Services
             rows = worksheet.Dimension.Rows; // 20
             columns = worksheet.Dimension.Columns; // 7
 
-            //Определяем в каких столбцах находятся обозначения приборов и их адреса
-            FindColumnIndexesByHeader();
-            
-            for (int rowIndex = CaptionRow + 1; rowIndex <= rows; rowIndex++)
-            {
-                string devName = worksheet.Cells[rowIndex, nameCol].Value?.ToString();
-                string devModel = worksheet.Cells[rowIndex, modelCol].Value?.ToString();
-                string devAddr = worksheet.Cells[rowIndex, addressCol].Value?.ToString();
-                string devSerial = worksheet.Cells[rowIndex, serialCol].Value?.ToString();
-                //Чтобы попасть в список устройств для заливки конфига, дивайс должен иметь адрес, обозначение
-                if (devAddr != null && devName != null)
-                {
-                    // Проверяем содержит ли строка адрес. Парсинг + три точки-разделителя в адресной строке (X.X.X.X)
-                    if (IPAddress.TryParse(devAddr, out IPAddress parseAddress) && (devAddr.Split('.').Length - 1) == 3)
-                    {
-                        //Valid IP, with address containing the IP
-                        switch (GetDeviceType(devModel))
-                        {
-                            case 1:
-                                devices.Add(new EthernetSwitch
-                                {
-                                    Designation = devName,
-                                    AddressIP = parseAddress.ToString(),
-                                    Serial = devSerial
-                                });
-                                break;
-                            case 2:
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
-            }
-            return devices;
         }
 
         private void FindColumnIndexesByHeader()
@@ -105,9 +153,12 @@ namespace DeviceTuner.Services
             {
                 string content = worksheet.Cells[CaptionRow, colIndex].Value?.ToString();
                 if (content == ColNamesCaption) { nameCol = colIndex; }
-                if (content == ColAddressCaption) { addressCol = colIndex; }
+                if (content == ColIPAddressCaption) { IPaddressCol = colIndex; }
+                if (content == ColRS485AddressCaption) { RS485addressCol = colIndex; }
+                if (content == ColRS232AddressCaption) { RS232addressCol = colIndex; }
                 if (content == ColSerialCaption) { serialCol = colIndex; }
                 if (content == ColModelCaption) { modelCol = colIndex; }
+                if (content == ColParentCaption) { parentCol = colIndex; }
             }
         }
 
@@ -121,7 +172,7 @@ namespace DeviceTuner.Services
         private bool SaveNetworkDevice(EthernetSwitch ethernetSwitch)
         {
             //поиск в таблице строки которая содержит IP-адрес такой же как в networkDevice
-            int? foundRow = SearchRowByCellValue(ethernetSwitch.AddressIP, addressCol); 
+            int? foundRow = SearchRowByCellValue(ethernetSwitch.AddressIP, IPaddressCol); 
             if (foundRow != null)
             {
                 // записываем серийник коммутатора в графу "Серийный номер" напротив IP-адреса этого коммутатора
