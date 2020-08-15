@@ -52,11 +52,11 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
             set { SetProperty(ref _cabinetList, value); }
         }
 
-        private ObservableCollection<CabinetViewModel> _cabs = new ObservableCollection<CabinetViewModel>();
-        public ObservableCollection<CabinetViewModel> Cabs
+        private ObservableCollection<CabinetViewModel> _cabsVM = new ObservableCollection<CabinetViewModel>();
+        public ObservableCollection<CabinetViewModel> CabsVM
         {
-            get { return _cabs; }
-            set { SetProperty(ref _cabs, value); }
+            get { return _cabsVM; }
+            set { SetProperty(ref _cabsVM, value); }
         }
 
         private IEventAggregator _ea;
@@ -84,9 +84,7 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
                 foreach (Cabinet item in _dataRepositoryService.GetDevices<RS485device>())
                 {
                     CabinetList.Add(item);
-                    CabinetViewModel cabinetViewModel = new CabinetViewModel(item);
-                    //cabinetViewModel.Children();
-                    Cabs.Add(new CabinetViewModel(item));
+                    CabsVM.Add(new CabinetViewModel(item));// Fill the TreeView with cabinets
                 }
             }
         }
