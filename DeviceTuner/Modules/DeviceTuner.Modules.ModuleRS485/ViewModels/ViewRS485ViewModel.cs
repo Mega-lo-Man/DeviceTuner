@@ -52,50 +52,15 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
             set { SetProperty(ref _cabinetList, value); }
         }
 
-        #region IsExpanded
-
-        private bool _isExpanded;
-        /// <summary>
-        /// Gets/sets whether the TreeViewItem 
-        /// associated with this object is expanded.
-        /// </summary>
-        public bool IsExpanded
+        private ObservableCollection<CabinetViewModel> _cabs = new ObservableCollection<CabinetViewModel>();
+        public ObservableCollection<CabinetViewModel> Cabs
         {
-            get { return _isExpanded; }
-            set
-            {
-                if (value != _isExpanded)
-                {
-                    SetProperty(ref _isExpanded, value);
-                }
-            }
+            get { return _cabs; }
+            set { SetProperty(ref _cabs, value); }
         }
 
-        #endregion // IsExpanded
-
-        #region IsSelected
-
-        private bool _isSelected;
         private IEventAggregator _ea;
         private IDataRepositoryService _dataRepositoryService;
-
-        /// <summary>
-        /// Gets/sets whether the TreeViewItem 
-        /// associated with this object is selected.
-        /// </summary>
-        public bool IsSelected
-        {
-            get { return _isSelected; }
-            set
-            {
-                if (value != _isSelected)
-                {
-                    SetProperty(ref _isSelected, value);
-                }
-            }
-        }
-
-        #endregion // IsSelected
 
         public ViewRS485ViewModel(IRegionManager regionManager,
                                   IMessageService messageService,
@@ -119,6 +84,9 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
                 foreach (Cabinet item in _dataRepositoryService.GetDevices<RS485device>())
                 {
                     CabinetList.Add(item);
+                    CabinetViewModel cabinetViewModel = new CabinetViewModel(item);
+                    //cabinetViewModel.Children();
+                    Cabs.Add(new CabinetViewModel(item));
                 }
             }
         }

@@ -47,5 +47,40 @@ namespace DeviceTuner.SharedDataModel
             objLst.Clear();
         }
         #endregion
+        private bool _isExpanded;
+        /// <summary>
+        /// Gets/sets whether the TreeViewItem 
+        /// associated with this object is expanded.
+        /// </summary>
+        public bool IsExpanded
+        {
+            get { return _isExpanded; }
+            set
+            {
+                if (value != _isExpanded)
+                {
+                    //SetProperty(ref _isExpanded, value);
+                }
+            }
+        }
+
+
+        
+        private bool _isSelected;
+        /// <summary>
+        /// Gets/sets whether the TreeViewItem 
+        /// associated with this object is selected.
+        /// </summary>
+        public bool IsSelected
+        {
+            get { return _isSelected; }
+            set
+            {
+                if (value != _isSelected)
+                {
+                    //SetProperty(ref _isSelected, value);
+                }
+            }
+        }
     }
 }
