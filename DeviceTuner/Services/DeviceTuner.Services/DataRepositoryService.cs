@@ -45,11 +45,12 @@ namespace DeviceTuner.Services
             {
                 case 1:
                     cabinetsLst = _excelDataDecoder.GetCabinetsFromExcel(_fullPathToData);
-                    //FillSwitchCollection(cabinetsLst);
                     break;
             }
             //Сообщаем всем об обновлении данных в репозитории
-            _ea.GetEvent<MessageSentEvent>().Publish(Tuple.Create(MessageSentEvent.RepositoryUpdated, "1"));
+            _ea.GetEvent<MessageSentEvent>().Publish(new Message {
+                ActionCode = MessageSentEvent.RepositoryUpdated
+            });
         }
 
         public bool SaveDevice<T>(T arg) where T : SimplestСomponent

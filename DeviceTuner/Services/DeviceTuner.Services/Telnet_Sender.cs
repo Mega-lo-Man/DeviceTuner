@@ -36,7 +36,10 @@ namespace DeviceTuner.Services
             {
                 var ev = _ea.GetEvent<MessageSentEvent>();
                 string returnStrFromConsole = _tc.Login(Username, Password, 1000);
-                ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, returnStrFromConsole));
+                ev.Publish(new Message {
+                    ActionCode = MessageSentEvent.StringToConsole,
+                    MessageString = returnStrFromConsole
+                });//(Tuple.Create(MessageSentEvent.StringToConsole, returnStrFromConsole));
                 // server output should end with "$" or ">" or "#", otherwise the connection failed
                 string prompt = returnStrFromConsole.TrimEnd();
                 prompt = returnStrFromConsole.Substring(prompt.Length - 1, 1);
@@ -61,34 +64,44 @@ namespace DeviceTuner.Services
             return ethernetDevice; // Возвращаем объект с заполненными свойствами полученными из коммутатора
         }
 
+        private string SendMessage(string command)
+        {
+            string commandResult = _tc.WriteRead(command); //Комманда в коммутатор
+
+            // Сообщаем всем, что получена строка-ответ от коммутатора которую нужно вывести в консоль
+            _ea.GetEvent<MessageSentEvent>().Publish(new Message {
+                ActionCode = MessageSentEvent.StringToConsole,
+                MessageString = commandResult
+            });
+            return commandResult;
+        }
+
+
         private bool PacketSendToTelnet()
         {
-            // Сократим начало выражения "_ea.GetEvent<MessageSentEvent>()" обозвав его "ev"
-            MessageSentEvent ev = _ea.GetEvent<MessageSentEvent>();
+            SendMessage("conf t");
+            SendMessage("hostname " + _ethernetDevice.Designation);
+            SendMessage("aaa authentication login default line");
+            SendMessage("aaa authentication enable default line");
+
+            SendMessage("line console");
+            SendMessage("login authentication default");
+            SendMessage("enable authentication default");
+            SendMessage("password " + _sDict["NewAdminPassword"]);
+            SendMessage("exit");
+
+            SendMessage("ip ssh server");
+            SendMessage("line ssh");
+            SendMessage("login authentication default");
+            SendMessage("enable authentication default");
+            SendMessage("password " + _sDict["NewAdminPassword"]);
+            SendMessage("exit");
+
+            SendMessage("username " + _sDict["NewAdminLogin"] + " privilege 15 " + "password " + _sDict["NewAdminPassword"]);
             
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("conf t")));
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("hostname " + _ethernetDevice.Designation)));
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("aaa authentication login default line")));
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("aaa authentication enable default line")));
-
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("line console")));
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("login authentication default")));
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("enable authentication default")));
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("password " + _sDict["NewAdminPassword"])));
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("exit")));
-
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("ip ssh server")));
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("line ssh")));
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("login authentication default")));
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("enable authentication default")));
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("password " + _sDict["NewAdminPassword"])));
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("exit")));
-
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("username " + _sDict["NewAdminLogin"] + " privilege 15 " + "password " + _sDict["NewAdminPassword"])));
-
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("interface vlan 1")));
-
-            ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, _tc.WriteRead("ip address " + _ethernetDevice.AddressIP + " /" + _sDict["IPmask"])));
+            SendMessage("interface vlan 1");
+            SendMessage("ip address " + _ethernetDevice.AddressIP + " /" + _sDict["IPmask"]);
+            
             return true;
         }
     }

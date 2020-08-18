@@ -12,6 +12,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Navigation;
 
 namespace DeviceTuner.Modules.ModuleRS485.ViewModels
 {
@@ -45,6 +46,27 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
             set { SetProperty(ref _defaultRS485Address, value); }
         }
 
+        private bool _isCheckedByCabinets = true;
+        public bool IsCheckedByCabinets
+        {
+            get { return _isCheckedByCabinets; }
+            set { SetProperty(ref _isCheckedByCabinets, value); }
+        }
+
+        private bool _isCheckedByArea = false;
+        public bool IsCheckedByArea
+        {
+            get { return _isCheckedByArea; }
+            set { SetProperty(ref _isCheckedByArea, value); }
+        }
+
+        private bool _isCheckedComplexVerification = false;
+        public bool IsCheckedComplexVerification
+        {
+            get { return _isCheckedComplexVerification; }
+            set { SetProperty(ref _isCheckedComplexVerification, value); }
+        }
+
         private ObservableCollection<Cabinet> _cabinetList = new ObservableCollection<Cabinet>();
         public ObservableCollection<Cabinet> CabinetList
         {
@@ -57,6 +79,13 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
         {
             get { return _cabsVM; }
             set { SetProperty(ref _cabsVM, value); }
+        }
+
+        private ObservableCollection<RS485device> _devicesForProgramming = new ObservableCollection<RS485device>();
+        public ObservableCollection<RS485device> DevicesForProgramming
+        {
+            get { return _devicesForProgramming; }
+            set { SetProperty(ref _devicesForProgramming, value); }
         }
 
         private IEventAggregator _ea;
@@ -72,21 +101,56 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
 
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
 
+            StartCommand = new DelegateCommand(async () => await StartCommandExecuteAsync(), StartCommandCanExecute);
+
             Title = "RS485";
-            Message = "View RS485 from your Prism Module";
+            //Message = "View RS485 from your Prism Module";
         }
 
-        private void MessageReceived(Tuple<int, string> message)
+        private bool StartCommandCanExecute()
         {
-            if (message.Item1 == MessageSentEvent.RepositoryUpdated)
+            if (DevicesForProgramming.Count > 0) return true;
+            return false;
+        }
+
+        private Task StartCommandExecuteAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void MessageReceived(Message message)
+        {
+            if (message.ActionCode == MessageSentEvent.RepositoryUpdated)
             {
                 CabinetList.Clear();
                 foreach (Cabinet item in _dataRepositoryService.GetDevices<RS485device>())
                 {
                     CabinetList.Add(item);
-                    CabsVM.Add(new CabinetViewModel(item));// Fill the TreeView with cabinets
+                    CabsVM.Add(new CabinetViewModel(item, _ea));// Fill the TreeView with cabinets
+                }
+            }
+            if (message.ActionCode == MessageSentEvent.UserSelectedItemInTreeView)
+            {
+                object dev = message.AttachedObject;
+                if (dev.GetType() == typeof(RS485device))
+                {
+                    DevicesForProgramming.Clear();
+                    DevicesForProgramming.Add((RS485device)message.AttachedObject);
+                }
+                if (dev.GetType() == typeof(Cabinet))
+                {
+                    DevicesForProgramming.Clear();
+                    Cabinet cab = (Cabinet)message.AttachedObject;
+                    foreach(RS485device item in cab.GetDevicesList<RS485device>())
+                    {
+                        DevicesForProgramming.Add(item);
+                    }
                 }
             }
         }
+
+        #region Commands
+        public DelegateCommand StartCommand { get; private set; }
+        #endregion
     }
 }

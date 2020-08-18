@@ -197,9 +197,9 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             return settingsDict;
         }
         
-        private void MessageReceived(Tuple<int, string> message)
+        private void MessageReceived(Message message)//(Tuple<int, string> message)
         {
-            if (message.Item1 == MessageSentEvent.RepositoryUpdated)
+            if (message.ActionCode == MessageSentEvent.RepositoryUpdated)
             {
                 SwitchList.Clear();
                 List<Cabinet> cabinets = (List<Cabinet>)_dataRepositoryService.GetDevices<EthernetSwitch>();
@@ -211,9 +211,9 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
                     }
                 }
             }
-            if(message.Item1 == MessageSentEvent.NeedOfUserAction)
+            if(message.ActionCode == MessageSentEvent.NeedOfUserAction)
             {
-                MessageForUser = message.Item2;// Обновим информацию для пользователя 
+                MessageForUser = message.MessageString;// Обновим информацию для пользователя 
             }
         }
 

@@ -5,12 +5,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:VM ="clr-namespace:DeviceTuner.Modules.ModuleRS485.ViewModels"
-             xmlns:debug ="clr-namespace:DeviceTuner.Modules.ModuleRS485.ViewModels"
-             xmlns:VMSDM ="clr-namespace:DeviceTuner.SharedDataModel;assembly=DeviceTuner.SharedDataModel"
              xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
-             xmlns:prism="http://prismlibrary.com/"
+             xmlns:prism="http://prismlibrary.com/" 
              prism:ViewModelLocator.AutoWireViewModel="True" >
     <UserControl.Resources>
         <ResourceDictionary>
@@ -18,10 +16,15 @@
                 <ResourceDictionary Source="pack://application:,,,/DeviceTuner.core;component/Resources/DictionaryStyles.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DeviceTuner.core;component/Resources/DictionaryImages.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <debug:DebugConverter x:Key="DebugConverter"/>
+
+            <VM:DebugConverter x:Key="DebugConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
 
+    <UserControl.InputBindings>
+        <KeyBinding Key="Space" Command="{Binding StartCommand}"/>
+    </UserControl.InputBindings>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"/>
@@ -29,8 +32,8 @@
             <RowDefinition Height="1*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1.5*"/>
+            <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="1*"/>
         </Grid.ColumnDefinitions>
         <StackPanel Orientation="Vertical" >
@@ -74,9 +77,9 @@
         </StackPanel>
         
         <StackPanel Grid.Row="0" Grid.Column="2">
-            <RadioButton Content="По шкафам" GroupName="WorkType" IsChecked="True" />
-            <RadioButton Content="По площадкам" GroupName="WorkType"/>
-            <RadioButton Content="Проверка RS-485" GroupName="WorkType"/>
+            <RadioButton Content="По шкафам" GroupName="WorkType" IsChecked="{Binding IsCheckedByCabinets}" />
+            <RadioButton Content="По площадкам" GroupName="WorkType" IsChecked="{Binding IsCheckedByArea}"/>
+            <RadioButton Content="Проверка RS-485" GroupName="WorkType" IsChecked="{Binding IsCheckedComplexVerification}"/>
         </StackPanel>
         <TreeView ItemsSource="{Binding Path=CabsVM}" Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Margin="5" >
             <TreeView.ItemContainerStyle>
@@ -115,27 +118,38 @@
             </TreeView.Resources>
         </TreeView>
 
-        <ListBox x:Name="DeviceListBox" ItemsSource="{Binding Path=DeviceList}" SelectedItem="{Binding Path=SelectedDevice}" Grid.Row="1" Grid.Column="1" Margin="5" Grid.RowSpan="3">
+        <ListBox x:Name="DeviceListBox" ItemsSource="{Binding Path=DevicesForProgramming}" SelectedItem="{Binding Path=SelectedDevice}" Grid.Row="1" Grid.Column="1" Margin="5" Grid.RowSpan="3">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="1*"/>
                             <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
                         </Grid.ColumnDefinitions>
-                        <StackPanel Margin="2" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Stretch">
-                            <TextBlock Text="{Binding Designation}" />
-                            <TextBlock Text="{Binding AddressRS485}" />
-                            <TextBlock Text="{Binding Serial}" />
-                        </StackPanel>
+                        
+                        <TextBlock Text="{Binding Model}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1"/>
+                        <TextBlock Text="{Binding Designation}" Grid.Row="1" Grid.Column="0"/>
+                        <TextBlock Text="{Binding AddressRS485}" Grid.Row="1" Grid.Column="1"/>
+                        <TextBlock Text="{Binding Serial}" Grid.Row="2" Grid.Column="0"/>
+                        <!--
                         <Image Margin="3" Grid.Column="1" Grid.Row="0" Source="{Binding Serial, Converter={StaticResource ItemColorConverter}}"/>
+                        -->
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
+        
+        
+        
+        <Button Command="{Binding StartCommand}" Content="Шей да пори!" Grid.Column="2" Grid.Row="2" Margin="5">
+            
+        </Button>
         
     </Grid>
     

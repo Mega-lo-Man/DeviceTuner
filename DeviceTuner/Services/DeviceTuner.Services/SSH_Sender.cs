@@ -133,7 +133,10 @@ namespace DeviceTuner.Services
 
             while ((line = stream.ReadLine(TimeSpan.FromSeconds(2))) != null)
             {
-                ev.Publish(Tuple.Create(MessageSentEvent.StringToConsole, line));
+                ev.Publish(new Message {
+                    ActionCode = MessageSentEvent.StringToConsole,
+                    MessageString = line
+                });//Tuple.Create(MessageSentEvent.StringToConsole, line));
                 result += line;
             }
             return result;

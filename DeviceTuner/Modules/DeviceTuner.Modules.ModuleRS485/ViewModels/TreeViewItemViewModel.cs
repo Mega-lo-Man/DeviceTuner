@@ -1,4 +1,6 @@
-﻿using DeviceTuner.Core.Mvvm;
+﻿using DeviceTuner.Core;
+using DeviceTuner.Core.Mvvm;
+using Prism.Events;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,7 +15,6 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
     public class TreeViewItemViewModel : ViewModelBase
     {
         static readonly TreeViewItemViewModel DummyChild = new TreeViewItemViewModel();
-
         private TreeViewItemViewModel _parent;
         private readonly ObservableCollection<TreeViewItemViewModel> _children;
 
@@ -32,7 +33,6 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
 
         public TreeViewItemViewModel()
         {
-
         }
 
         #endregion Constructor
@@ -83,6 +83,28 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
             }
         }
 
+        private object _selectedItem = null;
+        // This is public get-only here but you could implement a public setter which
+        // also selects the item.
+        // Also this should be moved to an instance property on a VM for the whole tree, 
+        // otherwise there will be conflicts for more than one tree.
+        public object SelectedItem
+        {
+            get { return _selectedItem; }
+            private set
+            {
+                //if(_selectedItem != value)
+                //{
+                    _selectedItem = value;
+                    OnSelectedItemChanged();
+                //}
+            }
+        }
+
+        protected virtual void OnSelectedItemChanged()
+        {
+        }
+
         private bool _isSelected;
         /// <summary>
         /// Свойство обрабатывающее выделение элемента в дереве
@@ -90,7 +112,14 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
         public bool IsSelected
         {
             get { return _isSelected; }
-            set { SetProperty(ref _isSelected, value); }
+            set
+            {
+                SetProperty(ref _isSelected, value);
+                if(_isSelected)
+                {
+                    SelectedItem = this;
+                }
+            }
         }
 
         /// <summary>
@@ -99,7 +128,6 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
         /// </summary>
         protected virtual void LoadChildren()
         {
-
         }
 
         public TreeViewItemViewModel Parent

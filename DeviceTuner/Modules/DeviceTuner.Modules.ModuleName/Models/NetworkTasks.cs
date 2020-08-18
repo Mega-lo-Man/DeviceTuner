@@ -31,7 +31,10 @@ namespace DeviceTuner.Modules.ModuleSwitch.Models
         private void MessageForUser(string message)
         {
             //Сообщаем об обновлении данных в репозитории
-            _ea.GetEvent<MessageSentEvent>().Publish(Tuple.Create(MessageSentEvent.NeedOfUserAction, message));
+            _ea.GetEvent<MessageSentEvent>().Publish(new Message {
+                ActionCode = MessageSentEvent.NeedOfUserAction,
+                MessageString = message
+            });//(Tuple.Create(MessageSentEvent.NeedOfUserAction, message));
         }
 
         public bool SendPing(string NewIPAddress)
