@@ -96,6 +96,13 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             set { SetProperty(ref _sliderIsChecked, value); }
         }
 
+        private string _observeConsole;
+        public string ObserveConsole
+        {
+            get { return _observeConsole; }
+            set { SetProperty(ref _observeConsole, value); }
+        }
+
         private ObservableCollection<EthernetSwitch> _switchList;
         public ObservableCollection<EthernetSwitch> SwitchList //Список коммутаторов
         {
@@ -214,6 +221,10 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             if(message.ActionCode == MessageSentEvent.NeedOfUserAction)
             {
                 MessageForUser = message.MessageString;// Обновим информацию для пользователя 
+            }
+            if(message.ActionCode == MessageSentEvent.StringToConsole)
+            {
+                ObserveConsole = message.MessageString;// Ответы коммутатора в консоль
             }
         }
 

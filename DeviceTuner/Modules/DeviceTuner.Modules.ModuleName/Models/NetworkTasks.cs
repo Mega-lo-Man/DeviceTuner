@@ -37,6 +37,16 @@ namespace DeviceTuner.Modules.ModuleSwitch.Models
             });//(Tuple.Create(MessageSentEvent.NeedOfUserAction, message));
         }
 
+        private void MessageToConsole(string message)
+        {
+            //Сообщаем об обновлении данных в репозитории
+            _ea.GetEvent<MessageSentEvent>().Publish(new Message
+            {
+                ActionCode = MessageSentEvent.StringToConsole,
+                MessageString = message
+            });//(Tuple.Create(MessageSentEvent.NeedOfUserAction, message));
+        }
+
         public bool SendPing(string NewIPAddress)
         {
             Ping pingSender = new Ping();
@@ -67,6 +77,7 @@ namespace DeviceTuner.Modules.ModuleSwitch.Models
 
         public bool UploadConfigStateMachine(EthernetSwitch switchDevice, Dictionary<string, string> settings)
         {
+            MessageToConsole("Waiting device...");
             Dictionary<string, string> _sDict = settings;
             int State = 0;
             while (State < 6)

@@ -1,5 +1,6 @@
 ﻿using DeviceTuner.Core;
 using DeviceTuner.Core.Mvvm;
+using DeviceTuner.Modules.ModuleRS485.Models;
 using DeviceTuner.Services.Interfaces;
 using DeviceTuner.SharedDataModel;
 using Prism.Commands;
@@ -88,18 +89,29 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
             set { SetProperty(ref _devicesForProgramming, value); }
         }
 
+        private ObservableCollection<string> _availableComPorts = new ObservableCollection<string>();
+        public ObservableCollection<string>  AvailableComPorts
+        {
+            get { return _availableComPorts; }
+            set { SetProperty(ref _availableComPorts, value); }
+        }
+
         private IEventAggregator _ea;
         private IDataRepositoryService _dataRepositoryService;
+        private ISerialSender _serialSender;
 
         public ViewRS485ViewModel(IRegionManager regionManager,
                                   IMessageService messageService,
+                                  ISerialSender serialSender,
                                   IDataRepositoryService dataRepositoryService,
                                   IEventAggregator ea) : base(regionManager)
         {
             _ea = ea;
             _dataRepositoryService = dataRepositoryService;
-
+            _serialSender = serialSender;
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
+
+            AvailableComPorts = _serialSender.GetAvailableCOMPorts();// Заполняем коллецию с доступными COM-портами
 
             StartCommand = new DelegateCommand(async () => await StartCommandExecuteAsync(), StartCommandCanExecute);
 

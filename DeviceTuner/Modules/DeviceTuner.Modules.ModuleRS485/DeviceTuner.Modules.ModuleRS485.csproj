@@ -11,4 +11,7 @@
     <ProjectReference Include="..\..\DeviceTuner.Core\DeviceTuner.Core.csproj" />
     <ProjectReference Include="..\..\Services\DeviceTuner.Services.Interfaces\DeviceTuner.Services.Interfaces.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
 </Project>
