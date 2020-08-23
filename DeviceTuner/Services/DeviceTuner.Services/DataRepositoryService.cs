@@ -60,7 +60,7 @@ namespace DeviceTuner.Services
             return false;
         }
 
-        public IList<Cabinet> GetDevices<T>() where T : SimplestСomponent
+        public IList<Cabinet> GetCabinetsWithDevices<T>() where T : SimplestСomponent
         {
             // Надо удалить все шкафы которые не содержат приборов типа Т
             List<Cabinet> CabinetsWithdevs = new List<Cabinet>();
@@ -83,6 +83,20 @@ namespace DeviceTuner.Services
                 }
             }
             return CabinetsWithdevs;
+        }
+
+        public IList<T> GetAllDevices<T>() where T : SimplestСomponent
+        {
+            IList<Cabinet> cabinets = GetCabinetsWithDevices<T>();
+            List<T> resultDevices = new List<T>();
+            foreach(Cabinet cabinet in cabinets)
+            {
+                foreach(T device in cabinet.GetDevicesList<T>())
+                {
+                    resultDevices.Add(device);
+                }
+            }
+            return resultDevices;
         }
     }
 }

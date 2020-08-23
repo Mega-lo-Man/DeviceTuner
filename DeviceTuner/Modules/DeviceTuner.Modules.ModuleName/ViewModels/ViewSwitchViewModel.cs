@@ -209,7 +209,7 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             if (message.ActionCode == MessageSentEvent.RepositoryUpdated)
             {
                 SwitchList.Clear();
-                List<Cabinet> cabinets = (List<Cabinet>)_dataRepositoryService.GetDevices<EthernetSwitch>();
+                List<Cabinet> cabinets = (List<Cabinet>)_dataRepositoryService.GetCabinetsWithDevices<EthernetSwitch>();
                 foreach (Cabinet cabinet in cabinets)
                 {
                     foreach (EthernetSwitch item in cabinet.GetDevicesList<EthernetSwitch>()) // масло масляное, в шкафах cabinets не может быть приборов отличных от EthernetSwitch

@@ -13,11 +13,18 @@ namespace DeviceTuner.Services.Interfaces
         void SetDevices(int DataProviderType, string FullPathToData);
 
         /// <summary>
-        /// Получить список приборов для настройки
+        /// Получить список шкафов с приборами заданного типа T для настройки
         /// </summary>
         /// <typeparam name="T">тип прибора унаследованный от SimplestComponent</typeparam>
         /// <returns>Список шкафов с приборами типа Т</returns>
-        IList<Cabinet> GetDevices<T>() where T : SimplestСomponent;
+        IList<Cabinet> GetCabinetsWithDevices<T>() where T : SimplestСomponent;
+
+        /// <summary>
+        /// Получить список всех приборов типа T во всех шкафах
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        IList<T> GetAllDevices<T>() where T : SimplestСomponent;
 
         /// <summary>
         /// Записать свойства прибора в таблицу Excel или базу данных
