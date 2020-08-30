@@ -53,6 +53,9 @@ namespace DeviceTuner.Modules.ModuleRS485.Models
             if (!_serialPort.IsOpen)
             {
                 _serialPort.Open();
+                // make DataReceived event handler
+                _serialPort.DataReceived += sp_DataReceived;
+
                 byte[] cmd = new byte[] { deviceAddress, 0x00, 0x0F, newDeviceAddress, newDeviceAddress }; ;
                 SendPacket(cmd);
                 while (portReceive == true) { }
@@ -60,6 +63,11 @@ namespace DeviceTuner.Modules.ModuleRS485.Models
 
 
                 Debug.WriteLine(receiveBuffer);
+                _serialPort.Close();
+                if(receiveBuffer != null)
+                {
+                    return true;
+                }
             }
             return false;
         }
@@ -116,6 +124,26 @@ namespace DeviceTuner.Modules.ModuleRS485.Models
                 portsList.Add(port);
             }
             return portsList;
+        }
+
+        public SerialPort GetSerialPortObjectRef()
+        {
+            return _serialPort;
+        }
+
+        private void sp_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            portReceive = true;
+            //Console.WriteLine("I am in event handler");
+            SerialPort sPort = (SerialPort)sender;
+            string data = sPort.ReadExisting();
+            foreach (char ch in data)
+            {
+                int value = Convert.ToInt32(ch);
+                //Console.Write(value.ToString("X") + " ");
+            }
+            receiveBuffer += data;
+            portReceive = false;
         }
     }
 }

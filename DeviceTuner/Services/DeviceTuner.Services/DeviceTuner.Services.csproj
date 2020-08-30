@@ -24,4 +24,44 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="C:\Users\Andrew\.nuget\packages\dymo.connect.sdk\1.3.1.115\Build\..\Build\DYMOLib\DYMO.LabelAPI.PlatformSpecific.dll" Link="DYMO\DYMO.LabelAPI.PlatformSpecific.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\Andrew\.nuget\packages\dymo.connect.sdk\1.3.1.115\Build\..\Build\DYMOPrinting.dll" Link="DYMO\DYMOPrinting.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\Andrew\.nuget\packages\dymo.connect.sdk\1.3.1.115\Build\..\Build\DYMOLib\DYMO.CrossPlatform.Common.PlatformSpecific.dll" Link="DYMO\DYMO.CrossPlatform.Common.PlatformSpecific.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\Andrew\.nuget\packages\dymo.connect.sdk\1.3.1.115\Build\..\Build\x64\PrintingSupportLibrary_x64.dll" Link="DYMO\PrintingSupportLibrary_x64.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\Andrew\.nuget\packages\dymo.connect.sdk\1.3.1.115\Build\..\Build\DYMOLib\DYMO.CrossPlatform.Common.dll" Link="DYMO\DYMO.CrossPlatform.Common.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\Andrew\.nuget\packages\dymo.connect.sdk\1.3.1.115\Build\..\Build\DYMOLib\DYMO.Common.dll" Link="DYMO\DYMO.Common.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\Andrew\.nuget\packages\dymo.connect.sdk\1.3.1.115\Build\..\Build\x64\DYMOPrinting_x64.dll" Link="DYMO\DYMOPrinting_x64.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\Andrew\.nuget\packages\dymo.connect.sdk\1.3.1.115\Build\..\Build\PrintingSupportLibrary.dll" Link="DYMO\PrintingSupportLibrary.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\Andrew\.nuget\packages\dymo.connect.sdk\1.3.1.115\Build\..\Build\DYMOLib\DYMO.LabelAPI.dll" Link="DYMO\DYMO.LabelAPI.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\Andrew\.nuget\packages\dymo.connect.sdk\1.3.1.115\Build\..\Build\libdymobarcode.dll" Link="DYMO\libdymobarcode.dll" />
+  </ItemGroup>
+
 </Project>

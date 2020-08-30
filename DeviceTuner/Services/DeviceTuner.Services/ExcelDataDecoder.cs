@@ -7,6 +7,7 @@ using OfficeOpenXml;
 using System.IO;
 using System.Net;
 using System.CodeDom;
+using System.IO.Packaging;
 
 namespace DeviceTuner.Services
 {
@@ -165,22 +166,37 @@ namespace DeviceTuner.Services
         public bool SaveDevice<T>(T arg) where T : SimplestСomponent
         {
             object someDevice = arg;
-            if (typeof(T) == typeof(EthernetSwitch)) return SaveNetworkDevice((EthernetSwitch)someDevice);
+            if (typeof(T) == typeof(EthernetSwitch)) return SaveSwitchDevice((EthernetSwitch)someDevice);
+            if (typeof(T) == typeof(RS485device)) return SaveRS485Device((RS485device)someDevice);
             return false;
         }
 
-        private bool SaveNetworkDevice(EthernetSwitch ethernetSwitch)
+        private bool SaveRS485Device(RS485device rs485Device)
+        {
+            bool result = SaveSerialByAddress(rs485Device.AddressRS485.ToString(), rs485Device.Serial, RS485addressCol);
+            // Recording other parameters
+            return result;
+        }
+
+        private bool SaveSwitchDevice(EthernetSwitch ethernetSwitch)
+        {
+            bool result = SaveSerialByAddress(ethernetSwitch.AddressIP, ethernetSwitch.Serial, IPaddressCol);
+            // Recording other parameters
+            return result;
+        }
+
+        private bool SaveSerialByAddress(string address, string serial, int addrColumn)
         {
             //поиск в таблице строки которая содержит IP-адрес такой же как в networkDevice
-            int? foundRow = SearchRowByCellValue(ethernetSwitch.AddressIP, IPaddressCol); 
+            int? foundRow = SearchRowByCellValue(address, addrColumn);
             if (foundRow != null)
             {
                 // записываем серийник коммутатора в графу "Серийный номер" напротив IP-адреса этого коммутатора
-                worksheet.Cells[foundRow.Value, serialCol].Value = ethernetSwitch.Serial;
+                worksheet.Cells[foundRow.Value, serialCol].Value = serial;
                 package.Save();
                 return true;
             }
-            return false;
+            return true;
         }
 
         // Поиск номера строки к которой относится только что сконфигурированный дивайс

@@ -10,16 +10,21 @@ using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Navigation;
+using System.Windows.Threading;
 
 namespace DeviceTuner.Modules.ModuleRS485.ViewModels
 {
     public class ViewRS485ViewModel : RegionViewModelBase
     {
+        private int DeviceCounter = 0;
+
         private string _message;
         public string Message
         {
@@ -46,6 +51,13 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
         {
             get { return _defaultRS485Address; }
             set { SetProperty(ref _defaultRS485Address, value); }
+        }
+
+        private string _serialTextBox;
+        public string SerialTextBox 
+        {
+            get { return _serialTextBox; }
+            set { SetProperty(ref _serialTextBox, value); }
         }
 
         private bool _isCheckedByCabinets = true;
@@ -96,6 +108,13 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
             }
         }
 
+        private string _currentPort;
+        public string CurrentPort
+        {
+            get { return _currentPort; }
+            set { SetProperty(ref _currentPort, value); } 
+        }
+
         private ObservableCollection<Cabinet> _cabinetList = new ObservableCollection<Cabinet>();
         public ObservableCollection<Cabinet> CabinetList
         {
@@ -118,6 +137,8 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
         }
 
         private ObservableCollection<string> _availableComPorts = new ObservableCollection<string>();
+        
+
         public ObservableCollection<string>  AvailableComPorts
         {
             get { return _availableComPorts; }
@@ -127,9 +148,10 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
         private IEventAggregator _ea;
         private IDataRepositoryService _dataRepositoryService;
         private ISerialSender _serialSender;
+        private Dispatcher _dispatcher;
 
         public ViewRS485ViewModel(IRegionManager regionManager,
-                                  IMessageService messageService,
+                                  //IMessageService messageService,
                                   ISerialSender serialSender,
                                   IDataRepositoryService dataRepositoryService,
                                   IEventAggregator ea) : base(regionManager)
@@ -138,6 +160,8 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
             _dataRepositoryService = dataRepositoryService;
             _serialSender = serialSender;
             _ea.GetEvent<MessageSentEvent>().Subscribe(MessageReceived);
+
+            _dispatcher = Dispatcher.CurrentDispatcher;
 
             AvailableComPorts = _serialSender.GetAvailableCOMPorts();// Заполняем коллецию с доступными COM-портами
 
@@ -149,13 +173,56 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
 
         private bool StartCommandCanExecute()
         {
-            if (DevicesForProgramming.Count > 0) return true;
+            if (DevicesForProgramming.Count > 0 && CurrentPort != null && SerialTextBox != null) return true;
             return false;
         }
 
         private Task StartCommandExecuteAsync()
         {
-            throw new NotImplementedException();
+            return Task.Run(() => DownloadLoop());
+        }
+
+        private void DownloadLoop()
+        {
+            SerialPort sp = _serialSender.GetSerialPortObjectRef();
+
+            sp.PortName = CurrentPort;
+            // check port is open or not
+            if (sp.IsOpen == true)
+                Console.WriteLine("Port is open");
+            // set the port parameters
+            sp.BaudRate = 9600;
+
+            sp.DtrEnable = false;
+            sp.Handshake = Handshake.None;
+            sp.Parity = Parity.None;
+            sp.StopBits = StopBits.One;
+            sp.DataBits = 8;
+
+            RS485device device;
+            if (DeviceCounter < DevicesForProgramming.Count)
+            {
+                device = DevicesForProgramming[DeviceCounter];
+                if (device.Serial == null)//исключаем приборы уже имеющие серийник (они уже были сконфигурированны)
+                {
+                    device.Serial = SerialTextBox;
+                    if (_serialSender.ChangeDeviceAddress(127, Convert.ToByte(device.AddressRS485)))
+                    {
+                        _dataRepositoryService.SaveDevice(device);
+                        SerialTextBox = null;// Очищаем строку ввода серийника для ввода следующего
+                        DeviceCounter++;
+                    }
+                    // Обновляем всю коллекцию d UI целиком
+                    _dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
+                    }));
+                }
+            }
+            else
+            {
+                MessageBox.Show("!");
+            }
         }
 
         private void MessageReceived(Message message)

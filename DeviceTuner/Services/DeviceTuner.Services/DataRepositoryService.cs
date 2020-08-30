@@ -35,6 +35,16 @@ namespace DeviceTuner.Services
             return false;
         }
 
+        private bool SaveRS485Device(RS485device rs485Device)
+        {
+            if (_dataProviderType == 1) // Если источник данных - таблица Excel
+            {
+                _excelDataDecoder.SaveDevice(rs485Device);
+                return true;
+            }
+            return false;
+        }
+
         public void SetDevices(int DataProviderType, string FullPathToData)
         {
             _dataProviderType = DataProviderType;
@@ -57,8 +67,11 @@ namespace DeviceTuner.Services
         {
             object someDevice = arg;
             if (typeof(T) == typeof(EthernetSwitch)) return SaveSwitchDevice((EthernetSwitch)someDevice);
+            if (typeof(T) == typeof(RS485device)) return SaveRS485Device((RS485device)someDevice);
             return false;
         }
+
+        
 
         public IList<Cabinet> GetCabinetsWithDevices<T>() where T : SimplestСomponent
         {

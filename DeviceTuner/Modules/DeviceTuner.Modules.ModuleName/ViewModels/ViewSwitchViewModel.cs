@@ -82,7 +82,7 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             set { SetProperty(ref _currentItemTextBox, value); }
         }
 
-        private string _messageForUser = "1";
+        private string _messageForUser = "Подключи \r\n коммутатор";
         public string MessageForUser
         {
             get { return _messageForUser; }
@@ -188,7 +188,7 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
                         }));
                 }
             }
-            SliderIsChecked = false; // Всё! Залили настройки во все коммутаторы. Вырубаем слайдер (пололжение OFF)
+            SliderIsChecked = false; // Всё! Залили настройки во все коммутаторы. Вырубаем слайдер (пололжение Off)
         }
         
         // Формирование словаря с необходимыми данными для настройки коммутаторов (логин, пароль, адрес по умолчанию и т.п.)
@@ -224,7 +224,7 @@ namespace DeviceTuner.Modules.ModuleName.ViewModels
             }
             if(message.ActionCode == MessageSentEvent.StringToConsole)
             {
-                ObserveConsole = message.MessageString;// Ответы коммутатора в консоль
+                ObserveConsole += message.MessageString + "\r\n";// Ответы коммутатора в консоль
             }
         }
 

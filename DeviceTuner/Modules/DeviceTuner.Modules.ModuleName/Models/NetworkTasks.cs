@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
+using System.Threading;
 
 namespace DeviceTuner.Modules.ModuleSwitch.Models
 {
@@ -16,10 +17,13 @@ namespace DeviceTuner.Modules.ModuleSwitch.Models
     {
         private ushort _telnetPort = 23;
         private ushort _sshPort = 22;
+        private int repitNumer = 5;
 
         private IEventAggregator _ea;
         private ISender _telnetSender;
         private ISender _sshSender;
+
+        private string RSAfile = "id_rsa.key";
 
         public NetworkTasks(IEventAggregator ea, IEnumerable<ISender> senders)
         {
@@ -45,6 +49,25 @@ namespace DeviceTuner.Modules.ModuleSwitch.Models
                 ActionCode = MessageSentEvent.StringToConsole,
                 MessageString = message
             });//(Tuple.Create(MessageSentEvent.NeedOfUserAction, message));
+        }
+
+        public bool SendMultiplePing(string NewIPAddr, int NumberOfRepetitions)
+        {
+            string _newIPAddr = NewIPAddr;
+            int _numberOfRepetitions = NumberOfRepetitions;
+
+            int counterGoodPing = 0;
+            
+            for (int i = 0; i < _numberOfRepetitions; i++)
+            {
+                if (SendPing(_newIPAddr))
+                {
+                    counterGoodPing++;
+                }
+                Thread.Sleep(50);
+            }
+            if (counterGoodPing >= _numberOfRepetitions / 2) return true;
+            else return false;
         }
 
         public bool SendPing(string NewIPAddress)
@@ -86,8 +109,8 @@ namespace DeviceTuner.Modules.ModuleSwitch.Models
                 {
                     case 0:
                         // Пингуем в цикле коммутатор по дефолтному адресу пока коммутатор не ответит на пинг
-                        MessageForUser("Ожидание коммутатора");
-                        if (SendPing(_sDict["DefaultIPAddress"])) State = 1;
+                        MessageForUser("Ожидание" + "\r\n" + "коммутатора");
+                        if (SendMultiplePing(_sDict["DefaultIPAddress"], repitNumer)) State = 1;
                         break;
                     case 1:
                         // Пытаемся в цикле подключиться по Telnet (сервер Telnet загружается через некоторое время после успешного пинга)
@@ -99,6 +122,7 @@ namespace DeviceTuner.Modules.ModuleSwitch.Models
                         break;
                     case 2:
                         // Заливаем первую часть конфига в коммутатор по Telnet
+                        MessageToConsole("Заливаем первую часть конфига в коммутатор по Telnet.");
                         _telnetSender.Send(switchDevice, _sDict);
                         // Закрываем Telnet соединение
                         _telnetSender.CloseConnection();
@@ -109,28 +133,31 @@ namespace DeviceTuner.Modules.ModuleSwitch.Models
                         if (_sshSender.CreateConnection(switchDevice.AddressIP,
                                                         _sshPort, _sDict["NewAdminLogin"],
                                                         _sDict["NewAdminPassword"],
-                                                        @"id_rsa.key"))
+                                                        RSAfile))
                             State = 4;
                         break;
                     case 4:
                         // Заливаем вторую часть конфига по SSH-протоколу
+                        MessageToConsole("Заливаем вторую часть конфига по SSH-протоколу.");
                         _sshSender.Send(switchDevice, _sDict);
                         // Закрываем SSH-соединение
                         _sshSender.CloseConnection();
-                        
-                        MessageForUser("Замени коммутатор!");
+
+                        MessageToConsole("Заливка конфига в коммутатор завершена.");
                         State = 5;
                         break;
                     case 5:
                         // Пингуем в цикле коммутатор по новому IP-адресу (как только пинг пропал - коммутатор отключили)
-                        if (!SendPing(switchDevice.AddressIP)) State = 6;
+                        MessageForUser("Замени" + "\r\n" + "коммутатор!");
+                        if (!SendMultiplePing(switchDevice.AddressIP, repitNumer)) State = 6;
                         break;
                     case 6:
                         break;
                     default:
                         break;
                 }
-                // Go to пункт 1
+                Thread.Sleep(100); // Слишком часто коммутатор лучше не долбить
+                // Go to state 0
             }
             return true;
         }

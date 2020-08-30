@@ -10,6 +10,8 @@ using DryIoc;
 using Prism.DryIoc;
 using DeviceTuner.Modules.ModuleSwitch.Models;
 using DeviceTuner.Modules.ModuleRS485.Models;
+using System.IO.Ports;
+using System;
 
 namespace DeviceTuner
 {

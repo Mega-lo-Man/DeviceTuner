@@ -39,7 +39,7 @@ namespace DeviceTuner.Services
                 ev.Publish(new Message {
                     ActionCode = MessageSentEvent.StringToConsole,
                     MessageString = returnStrFromConsole
-                });//(Tuple.Create(MessageSentEvent.StringToConsole, returnStrFromConsole));
+                });
                 // server output should end with "$" or ">" or "#", otherwise the connection failed
                 string prompt = returnStrFromConsole.TrimEnd();
                 prompt = returnStrFromConsole.Substring(prompt.Length - 1, 1);

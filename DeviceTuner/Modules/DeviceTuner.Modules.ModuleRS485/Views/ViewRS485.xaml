@@ -22,7 +22,9 @@
     </UserControl.Resources>
 
     <UserControl.InputBindings>
-        <KeyBinding Key="Space" Command="{Binding StartCommand}"/>
+        <KeyBinding Key="Enter"
+                    Command="{Binding StartCommand}"
+                    CommandParameter="{Binding ElementName=SerialTxtBox, Path=Text}"/>
     </UserControl.InputBindings>
     
     <Grid>
@@ -83,7 +85,7 @@
                     <ColumnDefinition Width="1*"/>
                 </Grid.ColumnDefinitions>
                 <Label Content="COM port:" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                <ComboBox ItemsSource="{Binding AvailableComPorts}" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="65">
+                <ComboBox ItemsSource="{Binding AvailableComPorts}" SelectedItem="{Binding CurrentPort}" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="65">
                     
                 </ComboBox>
             </Grid>
@@ -157,13 +159,14 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
+
         
-        
-        
+
         <Button Command="{Binding StartCommand}" Content="Шей да пори!" Grid.Column="2" Grid.Row="2" Margin="5">
             
         </Button>
-        
+        <TextBox Name="SerialTxtBox" Text="{Binding SerialTextBox, Mode=TwoWay}" Grid.Column="2" HorizontalAlignment="Stretch" Margin="5" Grid.Row="1" TextWrapping="Wrap" VerticalAlignment="Top"/>
+
     </Grid>
     
     

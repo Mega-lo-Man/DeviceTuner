@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DYMO.Connect.SDK" Version="1.3.1.115" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Services\DeviceTuner.Services.Interfaces\DeviceTuner.Services.Interfaces.csproj" />
+  </ItemGroup>
+
+</Project>

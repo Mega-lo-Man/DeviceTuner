@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Dynamic;
+using System.IO.Ports;
 using System.Text;
 
 namespace DeviceTuner.Modules.ModuleRS485.Models
 {
     public interface ISerialSender
     {
+        public SerialPort GetSerialPortObjectRef();
+
         /// <summary>
         /// Получить коллекцию установленных в системе COM-портов
         /// </summary>
