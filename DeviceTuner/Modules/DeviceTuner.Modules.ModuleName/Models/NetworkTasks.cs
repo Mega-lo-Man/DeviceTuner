@@ -38,7 +38,7 @@ namespace DeviceTuner.Modules.ModuleSwitch.Models
             _ea.GetEvent<MessageSentEvent>().Publish(new Message {
                 ActionCode = MessageSentEvent.NeedOfUserAction,
                 MessageString = message
-            });//(Tuple.Create(MessageSentEvent.NeedOfUserAction, message));
+            });
         }
 
         private void MessageToConsole(string message)
@@ -48,7 +48,7 @@ namespace DeviceTuner.Modules.ModuleSwitch.Models
             {
                 ActionCode = MessageSentEvent.StringToConsole,
                 MessageString = message
-            });//(Tuple.Create(MessageSentEvent.NeedOfUserAction, message));
+            });
         }
 
         public bool SendMultiplePing(string NewIPAddr, int NumberOfRepetitions)
