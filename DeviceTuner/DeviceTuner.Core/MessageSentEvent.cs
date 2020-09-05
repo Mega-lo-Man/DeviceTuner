@@ -11,5 +11,6 @@ namespace DeviceTuner.Core
         public static readonly int StringToConsole = 2;
         public static readonly int NeedOfUserAction = 3;
         public static readonly int UserSelectedItemInTreeView = 4;
+        public static readonly int UpdateRS485SearchProgressBar = 5;
     }
 }

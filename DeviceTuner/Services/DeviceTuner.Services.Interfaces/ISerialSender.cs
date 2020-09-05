@@ -29,7 +29,7 @@ namespace DeviceTuner.Modules.ModuleRS485.Models
         /// Поиск всех устройств на линии RS485.
         /// </summary>
         /// <returns>Список найденных пар адрес - модель устройства</returns>
-        public List<Tuple<byte, string>> SearchOnlineDevices();
+        public Dictionary<byte, string> SearchOnlineDevices();
 
         /// <summary>
         /// Запрос модели устройства

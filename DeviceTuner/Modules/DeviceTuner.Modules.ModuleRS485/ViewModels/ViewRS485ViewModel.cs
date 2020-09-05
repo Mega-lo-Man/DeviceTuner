@@ -10,6 +10,7 @@ using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
@@ -29,6 +30,7 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
         public DelegateCommand StartCommand { get; private set; }
         #endregion
 
+        #region Properties
         private string _message;
         public string Message
         {
@@ -60,12 +62,12 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
         private string _currentDeviceModel = "";
         public string CurrentDeviceModel
         {
-            get{ return _currentDeviceModel; }
-            set{ SetProperty(ref _currentDeviceModel, value); }
+            get { return _currentDeviceModel; }
+            set { SetProperty(ref _currentDeviceModel, value); }
         }
 
         private string _serialTextBox;
-        public string SerialTextBox 
+        public string SerialTextBox
         {
             get { return _serialTextBox; }
             set { SetProperty(ref _serialTextBox, value); }
@@ -75,7 +77,7 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
         public bool IsCheckedByCabinets
         {
             get { return _isCheckedByCabinets; }
-            set 
+            set
             {
                 if (value)
                 {
@@ -89,12 +91,12 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
         public bool IsCheckedByArea
         {
             get { return _isCheckedByArea; }
-            set 
+            set
             {
                 if (value)
                 {
                     DevicesForProgramming.Clear();// При переключении режима работы надо очистить список приборов для программирования
-                    
+
                     foreach (RS485device item in _dataRepositoryService.GetAllDevices<RS485device>())
                     {
                         DevicesForProgramming.Add(item);
@@ -123,7 +125,7 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
         public string CurrentPort
         {
             get { return _currentPort; }
-            set { SetProperty(ref _currentPort, value); } 
+            set { SetProperty(ref _currentPort, value); }
         }
 
         private ObservableCollection<Cabinet> _cabinetList = new ObservableCollection<Cabinet>();
@@ -148,13 +150,26 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
         }
 
         private ObservableCollection<string> _availableComPorts = new ObservableCollection<string>();
-        
 
-        public ObservableCollection<string>  AvailableComPorts
+
+        public ObservableCollection<string> AvailableComPorts
         {
             get { return _availableComPorts; }
             set { SetProperty(ref _availableComPorts, value); }
         }
+
+        private int _searchProgressBar = 0;
+        public int SearchProgressBar
+        {
+            get { return _searchProgressBar; }
+            set
+            {
+                int percent = value * 100 / 127;
+                SetProperty(ref _searchProgressBar, _searchProgressBar = percent);
+            }
+        }
+
+        #endregion
 
         private IEventAggregator _ea;
         private IDataRepositoryService _dataRepositoryService;
@@ -190,33 +205,50 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
 
         private bool StartCommandCanExecute()
         {
-            if (DevicesForProgramming.Count > 0 && CurrentPort != null && SerialTextBox != null) return true;
+            if (CurrentPort != null) return true;
             return false;
         }
 
         private Task StartCommandExecuteAsync()
         {
-            return Task.Run(() => DownloadLoop());
+            if(IsCheckedByArea || IsCheckedByCabinets)
+            {
+                return Task.Run(() => DownloadLoop());
+            }
+            else
+            {
+                SearchProgressBar = 1;
+                return Task.Run(() => VerificationCabinetsLoop());
+            }
+        }
+
+        private void VerificationCabinetsLoop()
+        {
+            SerialPort sp = SerialPortInit();
+            Dictionary<byte, string> onlineDevices = _serialSender.SearchOnlineDevices();
+            
+            foreach(RS485device device in DevicesForProgramming)
+            {
+                byte intAddr = Convert.ToByte(device.AddressRS485);
+                string expectedStr = device.Model.ToUpper();
+                string receivedStr = "";
+                //onlineDevices.TryGetValue(intAddr, out receivedStr);
+                //Debug.WriteLine(receivedStr);
+                if (onlineDevices.ContainsKey(intAddr))
+                {
+                    // проверяем содержит ли название модели (в списке приборов шкафа) с моделью предоставленнной самим прибором
+                    if (expectedStr.Contains(onlineDevices[intAddr].ToUpper()))
+                    {
+                        Debug.WriteLine(intAddr);
+                    }
+                }
+                
+            }
         }
 
         private void DownloadLoop()
         {
-            SerialPort sp = _serialSender.GetSerialPortObjectRef();
-
-            sp.PortName = CurrentPort;
-            // check port is open or not
-            if (sp.IsOpen == true)
-            {
-                Console.WriteLine("Port is open");
-            }
-            // set the port parameters
-            sp.BaudRate = 9600;
-
-            sp.DtrEnable = false;
-            sp.Handshake = Handshake.None;
-            sp.Parity = Parity.None;
-            sp.StopBits = StopBits.One;
-            sp.DataBits = 8;
+            //SerialPort sp = SerialPortInit();
 
             RS485device device;
             if (DeviceCounter < DevicesForProgramming.Count)
@@ -244,6 +276,28 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
                     if(DeviceCounter > DevicesForProgramming.Count) MessageBox.Show("Alles!");
                 }
             }
+        }
+
+        private SerialPort SerialPortInit()
+        {
+            SerialPort sp = _serialSender.GetSerialPortObjectRef();
+
+            sp.PortName = CurrentPort;
+            // check port is open or not
+            if (sp.IsOpen == true)
+            {
+                Console.WriteLine("Port is open");
+            }
+            // set the port parameters
+            sp.BaudRate = 9600;
+
+            sp.DtrEnable = false;
+            sp.Handshake = Handshake.None;
+            sp.Parity = Parity.None;
+            sp.StopBits = StopBits.One;
+            sp.DataBits = 8;
+
+            return sp;
         }
 
         private void MessageReceived(Message message)
@@ -287,12 +341,17 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
                         {
                             DevicesForProgramming.Add(item);
                         }
-                        
                     }
                 }
             }
+            if(message.ActionCode == MessageSentEvent.UpdateRS485SearchProgressBar)
+            {
+                _dispatcher.BeginInvoke(new Action(() =>
+                {
+                    SearchProgressBar = Convert.ToInt32((byte)message.AttachedObject);
+                }));
+                
+            }
         }
-
-        
     }
 }

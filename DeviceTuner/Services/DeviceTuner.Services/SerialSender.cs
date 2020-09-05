@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DeviceTuner.Core;
+using Prism.Events;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -15,6 +17,7 @@ namespace DeviceTuner.Modules.ModuleRS485.Models
         private bool portReceive;
         private string receiveBuffer = "";
         private readonly SerialPort _serialPort;
+        private readonly IEventAggregator _ea;
 
         /// <summary>
         /// Болидовская таблица CRC
@@ -90,9 +93,10 @@ namespace DeviceTuner.Modules.ModuleRS485.Models
         {
         }
 
-        public SerialSender(SerialPort serialPort)
+        public SerialSender(SerialPort serialPort, IEventAggregator ea)
         {
             _serialPort = serialPort;
+            _ea = ea;
         }
 
         public bool ChangeDeviceAddress(byte deviceAddress, byte newDeviceAddress)
@@ -121,15 +125,18 @@ namespace DeviceTuner.Modules.ModuleRS485.Models
 
         public string GetDeviceModel(byte deviceAddress)
         {
+            receiveBuffer = "";
             if (!_serialPort.IsOpen)
             {
                 _serialPort.Open();
                 // make DataReceived event handler
                 _serialPort.DataReceived += sp_DataReceived;
 
-                SendPacket(new byte[] { deviceAddress, 0x00/*0xE9*/, 0x0D/*0x01*/, 0x00, 0x00 });
+                //receiveBuffer = "";
+
+                SendPacket(new byte[] { deviceAddress, 0x00, 0x0D, 0x00, 0x00 });
                 while (portReceive == true) { }
-                Thread.Sleep(20);
+                Thread.Sleep(30);
                 
                 Debug.WriteLine(receiveBuffer);
                 _serialPort.Close();
@@ -138,8 +145,20 @@ namespace DeviceTuner.Modules.ModuleRS485.Models
                     return BolidDict[(byte)receiveBuffer[3]];
                 }
             }
-            return "";
+            else
+            {
 
+                _serialPort.DataReceived += sp_DataReceived;
+                SendPacket(new byte[] { deviceAddress, 0x00/*0xE9*/, 0x0D/*0x01*/, 0x00, 0x00 });
+                while (portReceive == true) { }
+                Thread.Sleep(30);
+                if (receiveBuffer != String.Empty)
+                {
+                    return BolidDict[(byte)receiveBuffer[3]];
+                }
+            }
+            
+            return "";
         }
 
         public bool IsDeviceOnline(byte deviceAddress)
@@ -147,17 +166,27 @@ namespace DeviceTuner.Modules.ModuleRS485.Models
             throw new NotImplementedException();
         }
 
-        public List<Tuple<byte, string>> SearchOnlineDevices()
+        public Dictionary<byte, string> SearchOnlineDevices()
         {
-            List<Tuple<byte, string>> result = new List<Tuple<byte, string>>();
+            if (!_serialPort.IsOpen)
+            {
+                _serialPort.Open();
+            }
+            Dictionary<byte, string> result = new Dictionary<byte, string>();
             for (byte devAddr = 1; devAddr <= 127; devAddr++)
             {
                 string OnlineDevicesModel = GetDeviceModel(devAddr);
-                if (OnlineDevicesModel != null)
+                if (OnlineDevicesModel != String.Empty)
                 {
-                    result.Add(new Tuple<byte, string>( devAddr, OnlineDevicesModel));
+                    result.Add(devAddr, OnlineDevicesModel);
                 }
+                _ea.GetEvent<MessageSentEvent>().Publish(new Message
+                {
+                    ActionCode = MessageSentEvent.UpdateRS485SearchProgressBar,
+                    AttachedObject = devAddr
+                });
             }
+            _serialPort.Close();
             return result;
         }
 
