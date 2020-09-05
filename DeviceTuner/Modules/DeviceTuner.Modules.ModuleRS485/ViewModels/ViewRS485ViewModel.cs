@@ -25,6 +25,10 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
     {
         private int DeviceCounter = 0;
 
+        #region Commands
+        public DelegateCommand StartCommand { get; private set; }
+        #endregion
+
         private string _message;
         public string Message
         {
@@ -46,11 +50,18 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
             set { SetProperty(ref _ipMask, value); }
         }
 
-        private string _defaultRS485Address="127";
+        private string _defaultRS485Address = "127";
         public string DefaultRS485Address
         {
             get { return _defaultRS485Address; }
             set { SetProperty(ref _defaultRS485Address, value); }
+        }
+
+        private string _currentDeviceModel = "";
+        public string CurrentDeviceModel
+        {
+            get{ return _currentDeviceModel; }
+            set{ SetProperty(ref _currentDeviceModel, value); }
         }
 
         private string _serialTextBox;
@@ -164,8 +175,14 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
             _dispatcher = Dispatcher.CurrentDispatcher;
 
             AvailableComPorts = _serialSender.GetAvailableCOMPorts();// Заполняем коллецию с доступными COM-портами
+            /*
+            StartCommand = new DelegateCommand(async () => await StartCommandExecuteAsync(), StartCommandCanExecute)
+                .ObservesProperty(() => CanExec)
+                .ObservesProperty(() => CurrentPort);
+            */
 
-            StartCommand = new DelegateCommand(async () => await StartCommandExecuteAsync(), StartCommandCanExecute);
+            StartCommand = new DelegateCommand(async () => await StartCommandExecuteAsync(), StartCommandCanExecute)
+                .ObservesProperty(() => CurrentPort);
 
             Title = "RS485";
             //Message = "View RS485 from your Prism Module";
@@ -189,7 +206,9 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
             sp.PortName = CurrentPort;
             // check port is open or not
             if (sp.IsOpen == true)
+            {
                 Console.WriteLine("Port is open");
+            }
             // set the port parameters
             sp.BaudRate = 9600;
 
@@ -205,6 +224,11 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
                 device = DevicesForProgramming[DeviceCounter];
                 if (device.Serial == null)//исключаем приборы уже имеющие серийник (они уже были сконфигурированны)
                 {
+                    _dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        CurrentDeviceModel = device.Model;
+                    }));
+                    
                     device.Serial = SerialTextBox;
                     if (_serialSender.ChangeDeviceAddress(127, Convert.ToByte(device.AddressRS485)))
                     {
@@ -212,16 +236,13 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
                         SerialTextBox = null;// Очищаем строку ввода серийника для ввода следующего
                         DeviceCounter++;
                     }
-                    // Обновляем всю коллекцию d UI целиком
+                    // Обновляем всю коллекцию в UI целиком
                     _dispatcher.BeginInvoke(new Action(() =>
                     {
                         CollectionViewSource.GetDefaultView(DevicesForProgramming).Refresh();
                     }));
+                    if(DeviceCounter > DevicesForProgramming.Count) MessageBox.Show("Alles!");
                 }
-            }
-            else
-            {
-                MessageBox.Show("!");
             }
         }
 
@@ -266,13 +287,12 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
                         {
                             DevicesForProgramming.Add(item);
                         }
+                        
                     }
                 }
             }
         }
 
-        #region Commands
-        public DelegateCommand StartCommand { get; private set; }
-        #endregion
+        
     }
 }

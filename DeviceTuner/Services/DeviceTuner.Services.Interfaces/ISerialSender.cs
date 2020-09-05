@@ -28,9 +28,8 @@ namespace DeviceTuner.Modules.ModuleRS485.Models
         /// <summary>
         /// Поиск всех устройств на линии RS485.
         /// </summary>
-        /// <param name="comPort">Номер COM-порта для опроса</param>
-        /// <returns>список адресов ответивших устройств</returns>
-        public List<byte> SearchOnlineDevices();
+        /// <returns>Список найденных пар адрес - модель устройства</returns>
+        public List<Tuple<byte, string>> SearchOnlineDevices();
 
         /// <summary>
         /// Запрос модели устройства
