@@ -10,7 +10,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.TextFormatting;
 
-namespace DeviceTuner.Modules.ModuleSwitch.ViewModels
+namespace DeviceTuner.Modules.ModuleRS485.ViewModels
 {
     [ValueConversion(typeof(string), typeof(BitmapImage))]
     public class DesignRS485Converter : IValueConverter

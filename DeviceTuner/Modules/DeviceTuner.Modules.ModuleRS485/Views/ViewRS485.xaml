@@ -16,7 +16,9 @@
                 <ResourceDictionary Source="pack://application:,,,/DeviceTuner.core;component/Resources/DictionaryStyles.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/DeviceTuner.core;component/Resources/DictionaryImages.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-
+            <VM:DesignRS485Converter x:Key="ItemColorConverter"
+                                     ImagePathOK="{StaticResource ResourceKey=OkImage}"
+                                     ImagePathCancel="{StaticResource ResourceKey=CancelImage}"/>
             <VM:DebugConverter x:Key="DebugConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -147,6 +149,11 @@
         </TreeView>
 
         <ListBox x:Name="DeviceListBox" ItemsSource="{Binding Path=DevicesForProgramming}" SelectedItem="{Binding Path=SelectedDevice}" Grid.Row="1" Grid.Column="1" Margin="5" Grid.RowSpan="3">
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                </Style>
+            </ListBox.ItemContainerStyle>
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid>
@@ -165,9 +172,9 @@
                         <TextBlock Text="{Binding Designation}" Grid.Row="1" Grid.Column="0"/>
                         <TextBlock Text="{Binding AddressRS485}" Grid.Row="1" Grid.Column="1"/>
                         <TextBlock Text="{Binding Serial}" Grid.Row="2" Grid.Column="0"/>
-                        <!--
-                        <Image Margin="3" Grid.Column="1" Grid.Row="0" Source="{Binding Serial, Converter={StaticResource ItemColorConverter}}"/>
-                        -->
+                        
+                        <Image Margin="3" Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" VerticalAlignment="Center" Source="{Binding Serial, Converter={StaticResource ItemColorConverter}}"/>
+                        
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>

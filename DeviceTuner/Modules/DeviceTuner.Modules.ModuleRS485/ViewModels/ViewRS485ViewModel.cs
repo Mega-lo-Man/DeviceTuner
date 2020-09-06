@@ -231,9 +231,7 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
             {
                 byte intAddr = Convert.ToByte(device.AddressRS485);
                 string expectedStr = device.Model.ToUpper();
-                string receivedStr = "";
-                //onlineDevices.TryGetValue(intAddr, out receivedStr);
-                //Debug.WriteLine(receivedStr);
+                
                 if (onlineDevices.ContainsKey(intAddr))
                 {
                     // проверяем содержит ли название модели (в списке приборов шкафа) с моделью предоставленнной самим прибором
@@ -242,7 +240,6 @@ namespace DeviceTuner.Modules.ModuleRS485.ViewModels
                         Debug.WriteLine(intAddr);
                     }
                 }
-                
             }
         }
 
